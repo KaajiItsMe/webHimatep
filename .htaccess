@@ -1,0 +1,22 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /webHimatep/
+
+    # Penanganan Error
+    ErrorDocument 404 /webHimatep/public/404.php
+    ErrorDocument 500 /webHimatep/public/500.php
+    
+    # Clean URLs for News
+    RewriteRule ^berita/([^/]+)/?$ public/detail-berita.php?slug=$1 [L,QSA]
+    
+    # Clean URLs for Programs
+    RewriteRule ^program/([^/]+)/?$ public/detail-program.php?slug=$1 [L,QSA]
+
+    # Mengarahkan root (kosong) ke folder public
+    RewriteRule ^$ public/ [L]
+
+    # Jika file atau folder tidak ditemukan di root, arahkan ke folder public
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>

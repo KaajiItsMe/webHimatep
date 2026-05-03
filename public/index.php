@@ -1,0 +1,715 @@
+<?php
+require_once '../private/php/config.php';
+
+// Ambil Berita (Terbaru 3)
+try {
+    $stmt = $pdo->query("SELECT * FROM berita ORDER BY tanggal_posting DESC LIMIT 3");
+    $berita_list = $stmt->fetchAll();
+} catch (PDOException $e) {
+    $berita_list = [];
+}
+
+// Ambil Proker dengan Agenda
+try {
+    $stmt = $pdo->query("
+        SELECT p.*, a.tanggal_event, a.waktu, a.lokasi 
+        FROM proker p 
+        LEFT JOIN agenda a ON p.id = a.proker_id 
+        ORDER BY p.id ASC
+    ");
+    $proker_list = $stmt->fetchAll();
+} catch (PDOException $e) {
+    $proker_list = [];
+}
+
+// Persiapkan data untuk Alpine.js
+$data_program_json = json_encode(array_map(function($p) {
+    $date = $p['tanggal_event'] ? new DateTime($p['tanggal_event']) : null;
+    return [
+        'id' => $p['id'],
+        'judul' => $p['judul'],
+        'slug' => $p['slug'],
+        'divisi' => $p['divisi'],
+        'divisiColor' => $p['divisi_color'],
+        'gambar' => $p['gambar'],
+        'icon' => $p['icon'],
+        'ringkasan' => $p['ringkasan'],
+        'unggulan' => (bool)$p['is_unggulan'],
+        'agenda' => $p['tanggal_event'] ? [
+            'date' => $p['tanggal_event'],
+            'bulan' => strtoupper($date->format('M')),
+            'tanggal' => $date->format('d'),
+            'waktu' => $p['waktu'],
+            'lokasi' => $p['lokasi']
+        ] : null
+    ];
+}, $proker_list));
+?>
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth scroll-pt-5 md:scroll-pt-5">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Website Resmi HIMATEP FIP UNM (Himpunan Mahasiswa Teknologi Pendidikan). Wadah kreasi, inovasi, dan pengabdian mahasiswa Teknologi Pendidikan UNM.">
+    <meta name="keywords" content="HIMATEP, FIP UNM, Teknologi Pendidikan, UNM, Mahasiswa TP, Makassar, Pendidikan Digital">
+    <meta name="author" content="HIMATEP FIP UNM">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost/webHimatep/">
+    <meta property="og:title" content="HIMATEP FIP UNM - Kisahmu Tak Pernah Usai">
+    <meta property="og:description" content="Wadah kreasi, inovasi, dan pengabdian mahasiswa Teknologi Pendidikan UNM.">
+    <meta property="og:image" content="http://localhost/webHimatep/public/images/logo-himatep.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="HIMATEP FIP UNM - Kisahmu Tak Pernah Usai">
+    <meta property="twitter:description" content="Wadah kreasi, inovasi, dan pengabdian mahasiswa Teknologi Pendidikan UNM.">
+
+    <title>HIMATEP FIP UNM - Kisahmu Tak Pernah Usai</title>
+
+    <?php include 'includes/meta_icons.php'; ?>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'himatep-green': '#1B5E20',
+                        'himatep-light': '#6efa80', /* Sesuai warna hijau cerah di gambar */
+                        'himatep-dark': '#111111',
+                    },
+                    fontFamily: {
+                        'sans': ['Poppins', 'sans-serif'],
+                        'cursive': ['"Great Vibes"', 'cursive'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- GSAP & ScrollTrigger -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+</head>
+
+<body class="font-sans bg-gray-50 text-himatep-dark overflow-x-hidden" x-data="{ mobileMenuOpen: false }">
+
+    <!-- Navbar -->
+    <nav class="fixed w-full z-[100] pt-4" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div
+                class="flex justify-between items-center h-20 bg-white backdrop-blur-xl rounded-full px-6 shadow-md border border-gray-400 transition-all duration-300">
+                <div class="flex items-center gap-3">
+                    <img src="images/logo-himatep.png" alt="Logo" class="h-10 w-10 rounded-full bg-gray-100"
+                        onerror="this.src='https://via.placeholder.com/50x50.png?text=Logo'">
+                    <span
+                        class="font-bold text-xs md:text-sm leading-tight text-himatep-dark">HIMATEP<br>FIP<br>UNM</span>
+                </div>
+                <div class="hidden md:flex space-x-4 lg:space-x-8 text-sm lg:text-base">
+                    <a href="#hero"
+                        class="nav-link whitespace-nowrap text-himatep-green font-medium hover:text-himatep-green transition">Beranda</a>
+                    <a href="#profile"
+                        class="nav-link whitespace-nowrap text-gray-600 font-medium hover:text-himatep-green transition">Profile</a>
+                    <a href="#proker"
+                        class="nav-link whitespace-nowrap text-gray-600 font-medium hover:text-himatep-green transition">Program Kerja</a>
+                    <a href="#kalender"
+                        class="nav-link whitespace-nowrap text-gray-600 font-medium hover:text-himatep-green transition">Agenda</a>
+                    <a href="#berita"
+                        class="nav-link whitespace-nowrap text-gray-600 font-medium hover:text-himatep-green transition">Berita</a>
+                    <a href="#aspirasi"
+                        class="nav-link whitespace-nowrap text-gray-600 font-medium hover:text-himatep-green transition">Suara
+                        Mahasiswa</a>
+                </div>
+                <div class="hidden md:flex items-center gap-4">
+                    <a href="admin/login.php" class="text-gray-400 hover:text-himatep-green transition-all p-2 rounded-full hover:bg-green-50" title="Admin Panel">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                    </a>
+                    <div class="relative" x-data="{ dropdownOpen: false }" @mouseenter="dropdownOpen = true"
+                        @mouseleave="dropdownOpen = false">
+                    <a href="#kontak"
+                        class="bg-green-400 hover:bg-green-500 text-himatep-dark px-6 py-2 rounded-full font-medium transition shadow-md flex items-center gap-2 focus:outline-none">
+                        Narahubung <svg class="w-4 h-4 transition-transform duration-200"
+                            :class="{'rotate-180': dropdownOpen}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </a>
+                    <!-- Dropdown Menu -->
+                    <div x-show="dropdownOpen" x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="opacity-0 translate-y-2"
+                        x-transition:enter-end="opacity-100 translate-y-0"
+                        x-transition:leave="transition ease-in duration-150"
+                        x-transition:leave-start="opacity-100 translate-y-0"
+                        x-transition:leave-end="opacity-0 translate-y-2"
+                        class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl py-2 border border-gray-400 z-50"
+                        style="display: none;">
+                        <a href="#kontak"
+                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-himatep-green transition flex items-center gap-2"><svg
+                                class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
+                                </path>
+                            </svg> WhatsApp</a>
+                        <a href="#kontak"
+                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-himatep-green transition flex items-center gap-2"><svg
+                                class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                                </path>
+                            </svg> Email</a>
+                        <a href="#kontak"
+                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-himatep-green transition flex items-center gap-2"><svg
+                                class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1">
+                                </path>
+                            </svg> Media Sosial</a>
+                    </div>
+                    </div>
+                </div>
+                <!-- Mobile menu button -->
+                <div class="md:hidden flex items-center">
+                    <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-gray-600 focus:outline-none">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path x-show="!mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round"
+                                stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                            <path x-show="mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round"
+                                stroke-width="2" d="M6 18L18 6M6 6l12 12" style="display:none;" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div x-show="mobileMenuOpen" class="md:hidden bg-white shadow-lg absolute w-full mt-2 rounded-b-2xl"
+            x-transition style="display:none;">
+            <div class="px-4 pt-2 pb-6 space-y-2">
+                <a @click="mobileMenuOpen = false" href="#hero"
+                    class="nav-link block px-3 py-2 text-himatep-green font-medium">Beranda</a>
+                <a @click="mobileMenuOpen = false" href="#profile"
+                    class="nav-link block px-3 py-2 text-gray-600 font-medium">Profile</a>
+                <a @click="mobileMenuOpen = false" href="#proker"
+                    class="nav-link block px-3 py-2 text-gray-600 font-medium">Program Kerja</a>
+                <a @click="mobileMenuOpen = false" href="#kalender"
+                    class="nav-link block px-3 py-2 text-gray-600 font-medium">Agenda</a>
+                <a @click="mobileMenuOpen = false" href="#berita"
+                    class="nav-link block px-3 py-2 text-gray-600 font-medium">Berita</a>
+                <a @click="mobileMenuOpen = false" href="#aspirasi"
+                    class="nav-link block px-3 py-2 text-gray-600 font-medium">Suara Mahasiswa</a>
+                <a @click="mobileMenuOpen = false" href="#kontak"
+                    class="nav-link block px-3 py-2 text-gray-600 font-bold hover:text-himatep-green">Narahubung</a>
+                <hr class="border-gray-100 my-2">
+                <a href="admin/login.php" class="block px-3 py-2 text-gray-400 text-sm flex items-center gap-2 hover:text-himatep-green transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                    </svg> Admin Panel
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="hero" class="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
+        <!-- Background Diagonal Sesuai Gambar -->
+        <div class="absolute inset-0 z-0 bg-white">
+            <div class="absolute inset-0 bg-himatep-light hero-diagonal"></div>
+        </div>
+
+        <div class="relative z-10 text-center px-4 max-w-10xl mx-auto flex flex-col items-center">
+            <img src="images/logo-himatep.png" alt="HIMATEP Logo"
+                class="w-[200px] h-[200px] md:w-80 md:h-80 mb-16 rounded-full bg-white p-4 mt-3"
+                onerror="this.src='https://via.placeholder.com/150x150.png?text=Logo'">
+            <h1 class="text-5xl md:text-7xl font-bold text-himatep-dark mb-2 tracking-tight hero-text">HIMATEP FIP UNM
+            </h1>
+            <h2 class="text-6xl md:text-8xl font-cursive text-himatep-dark mb-8 hero-text transform -rotate-2">Kisahmu
+                Tak Pernah Usai</h2>
+
+            <p class="text-lg md:text-xl text-gray-700 mb-16 mt-4 hero-text max-w-12xl mx-auto font-medium">Wadah
+                kreasi,
+                inovasi, dan pengabdian mahasiswa Teknologi Pendidikan menuju generasi unggul.</p>
+            <a href="#profile"
+                class="bg-green-400 hover:bg-green-500 text-black px-8 py-3 rounded-full font-bold  shadow-xl hero-text inline-block">Profile
+                Kami</a>
+        </div>
+    </section>
+
+    <!-- Profile Section -->
+    <section id="profile" class="py-24 bg-white gsap-fade-up min-h-screen flex flex-col justify-center">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold text-center mb-16 text-himatep-green">Profil Organisasi</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h3 class="text-2xl font-bold mb-4 border-l-4 border-himatep-green pl-4">Sejarah Singkat</h3>
+                    <p class="text-gray-600 leading-relaxed mb-8 text-justify">HIMATEP FIP UNM didirikan sebagai wadah
+                        aspirasi dan pengembangan diri mahasiswa Teknologi Pendidikan. Kami berkomitmen untuk terus
+                        berinovasi dalam bidang pendidikan dan teknologi serta menjunjung tinggi asas kekeluargaan.</p>
+
+                    <h3 class="text-2xl font-bold mb-4 border-l-4 border-himatep-green pl-4">Visi & Misi</h3>
+                    <ul class="list-none text-gray-600 space-y-3">
+                        <li class="flex items-start"><svg class="w-6 h-6 text-green-500 mr-2 flex-shrink-0" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path>
+                            </svg> Mewujudkan mahasiswa yang kreatif dan inovatif.</li>
+                        <li class="flex items-start"><svg class="w-6 h-6 text-green-500 mr-2 flex-shrink-0" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path>
+                            </svg> Meningkatkan solidaritas antar mahasiswa Teknologi Pendidikan.</li>
+                        <li class="flex items-start"><svg class="w-6 h-6 text-green-500 mr-2 flex-shrink-0" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path>
+                            </svg> Berkontribusi aktif dalam pengembangan pendidikan di Indonesia.</li>
+                    </ul>
+
+                    <a href="profile.php"
+                        class="mt-12 justify-center text-center items-center bg-green-400 hover:bg-green-500 text-black  px-8 py-3 rounded-full font-bold  shadow-xl hero-text inline-block">Profile
+                        Lengkap</a>
+
+                </div>
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="bg-gray-50 p-8 rounded-2xl shadow-sm border border-gray-400 text-center card-hover">
+                        <div class="text-5xl font-bold text-himatep-green mb-2">5</div>
+                        <div class="text-sm text-gray-500 font-medium uppercase tracking-wider">Divisi</div>
+                    </div>
+                    <div class="bg-gray-50 p-8 rounded-2xl shadow-sm border border-gray-400 text-center card-hover">
+                        <div class="text-5xl font-bold text-himatep-green mb-2">48</div>
+                        <div class="text-sm text-gray-500 font-medium uppercase tracking-wider">Pengurus</div>
+                    </div>
+                    <div
+                        class="bg-gray-50 p-8 rounded-2xl shadow-sm border border-gray-400 text-center col-span-2 card-hover">
+                        <div class="text-5xl font-bold text-himatep-green mb-2">20+</div>
+                        <div class="text-sm text-gray-500 font-medium uppercase tracking-wider">Program Kerja Aktif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Program Kerja Section -->
+    <section id="proker" class="py-24 bg-gray-50 gsap-fade-up min-h-screen flex flex-col justify-center">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold text-center mb-4 text-himatep-green">Program Kerja Unggulan</h2>
+            <p class="text-center text-gray-600 mb-16 max-w-2xl mx-auto">Dedikasi kami melalui program kerja nyata untuk
+                memajukan mahasiswa Teknologi Pendidikan dan masyarakat luas.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8"
+                x-data="{ prokers: (typeof dataProgram !== 'undefined' ? dataProgram : []).filter(p => p.unggulan).slice(0, 3) }">
+                <template x-for="item in prokers" :key="item.id">
+                    <div
+                        class="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-400 group card-hover flex flex-col">
+                        <div
+                            class="w-full h-48 mb-6 overflow-hidden relative group-hover:shadow-md transition-shadow">
+                            <img :src="item.gambar" :alt="item.judul"
+                                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                            <div class="absolute top-3 right-3 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-bold shadow-sm uppercase tracking-wider"
+                                :class="'text-' + item.divisiColor + '-600'" x-text="item.divisi"></div>
+                        </div>
+                        <h3 class="p-6 pt-0 pb-0 text-xl font-bold mb-3 text-gray-800" x-text="item.judul"></h3>
+                        <p class="p-6 pt-0 pb-0 text-gray-600 mb-4 line-clamp-3 flex-1" x-text="item.ringkasan"></p>
+                        <a :href="'detail-program.php?id=' + item.id"
+                            class="p-6 inline-flex items-center font-semibold hover:gap-2 transition-all mt-auto"
+                            :class="'text-' + item.divisiColor + '-600'">
+                            Detail Program <span class="ml-1">&rarr;</span>
+                        </a>
+                    </div>
+                </template>
+            </div>
+
+            <div class="mt-12 text-center">
+                <a href="proker.php"
+                    class="inline-flex items-center justify-center px-8 py-3 border-2 border-himatep-green text-himatep-green font-bold rounded-full hover:bg-himatep-green hover:text-white transition-colors duration-300">
+                    Lihat Semua Program Kerja
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Kalender Section -->
+    <section id="kalender" class="py-24 bg-white gsap-fade-up min-h-screen flex flex-col justify-center">
+        <div class="max-w-6xl mx-auto px-4 w-full" x-data="calendarApp">
+            <h2 class="text-3xl font-bold text-center mb-2 text-himatep-green">Agenda Kegiatan</h2>
+            <div class="bg-white rounded-3xl shadow-xl border border-gray-400 p-8">
+                <div class="flex justify-between items-center mb-8">
+                    <button @click="prevMonth()" class="p-3 bg-gray-50 rounded-full hover:bg-green-100 transition"><svg
+                            class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7">
+                            </path>
+                        </svg></button>
+                    <h3 class="text-2xl font-bold text-gray-800" x-text="monthNames[month] + ' ' + year"></h3>
+                    <button @click="nextMonth()" class="p-3 bg-gray-50 rounded-full hover:bg-green-100 transition"><svg
+                            class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                            </path>
+                        </svg></button>
+                </div>
+                <div class="grid grid-cols-7 gap-2 text-center mb-4 font-bold text-gray-500 uppercase text-sm">
+                    <div>Min</div>
+                    <div>Sen</div>
+                    <div>Sel</div>
+                    <div>Rab</div>
+                    <div>Kam</div>
+                    <div>Jum</div>
+                    <div>Sab</div>
+                </div>
+                <div class="grid grid-cols-7 gap-2">
+                    <template x-for="(day, index) in days" :key="index">
+                        <div class="h-10 md:h-32 border rounded-xl p-2 md:p-3 flex flex-col justify-between transition-all"
+                            :class="{'bg-gray-4 border-transparent opacity-50': day.empty, 'bg-white border-gray-800 hover:border-green-400 cursor-pointer': !day.empty && !day.event, 'bg-green-50 border-green-500 cursor-pointer shadow-sm transform hover:-translate-y-1': day.event}"
+                            @click="!day.empty ? showEvent(day.event) : null">
+                            <span x-show="!day.empty" class="text-sm font-bold block text-right"
+                                :class="{'text-green-700': day.event, 'text-gray-700': !day.event}"
+                                x-text="day.date"></span>
+                            <span x-show="day.event"
+                                class="text-xs bg-himatep-green text-white rounded p-1 truncate block mt-1 font-medium"
+                                x-text="day.event ? day.event.title : ''"></span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Modal Detail Event (Alpine) -->
+            <div x-show="selectedEvent !== null"
+                class="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm" x-cloak
+                style="display: none;">
+                <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-sm w-full m-4 transform transition-all"
+                    @click.away="selectedEvent = null">
+                    <h3 class="text-2xl font-bold mb-2 text-himatep-green" x-text="selectedEvent?.title"></h3>
+                    <p class="text-sm text-gray-500 mb-4 flex items-center"><svg class="w-4 h-4 mr-1" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                            </path>
+                        </svg> <span x-text="selectedEvent?.date"></span></p>
+                    <p class="text-gray-700 mb-6" x-text="selectedEvent?.desc"></p>
+                    <div class="flex flex-col gap-3">
+                        <a x-show="selectedEvent?.slug" :href="'detail-program.php?slug=' + selectedEvent?.slug"
+                            class="w-full bg-himatep-green hover:bg-green-700 text-white text-center font-bold py-2 px-4 rounded-lg transition shadow-md">Lihat
+                            Detail Program</a>
+                        <button @click="selectedEvent = null"
+                            class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg transition">Tutup</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agenda Mendatang (Bawah Kalender) -->
+            <div class="mt-16">
+                <div class="mb-8 text-center">
+                    <h3 class="text-2xl font-bold text-himatep-green mb-2">Agenda Mendatang</h3>
+                    <p class="text-gray-600">Jadwal kegiatan terdekat yang tidak boleh Anda lewatkan</p>
+                </div>
+
+                <!-- Grid 3 Agenda -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8"
+                    x-data="{ agendas: (typeof dataProgram !== 'undefined' ? dataProgram : []).filter(p => p.agenda).sort((a,b) => new Date(a.agenda.date) - new Date(b.agenda.date)).slice(0, 3) }">
+                    <template x-for="item in agendas" :key="item.id">
+                        <a :href="'detail-program.php?slug=' + item.slug"
+                            class="card-hover flex flex-col bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-400 hover:shadow-xl transition-all duration-300 group cursor-pointer">
+                            <div class=" relative h-48 w-full overflow-hidden">
+                                <img :src="item.gambar" :alt="item.judul"
+                                    class="w-full h-full object-cover transition-transform duration-700">
+                                <div
+                                    :class="'absolute top-4 right-4 text-white rounded-2xl p-2 flex flex-col justify-center items-center shadow-lg min-w-[70px] bg-' + item.divisiColor + '-600'">
+                                    <span class="text-xs font-bold uppercase tracking-wider opacity-90"
+                                        x-text="item.agenda.bulan"></span>
+                                    <span class="text-2xl font-black leading-none" x-text="item.agenda.tanggal"></span>
+                                </div>
+                            </div>
+                            <div class="p-6 flex-1 flex flex-col">
+                                <h3 class="text-xl font-bold text-gray-800 mb-4 transition-colors"
+                                    :class="'group-hover:text-' + item.divisiColor + '-600'" x-text="item.judul"></h3>
+                                <div class="space-y-3 mt-auto">
+                                    <div class="flex items-center text-sm font-medium text-gray-500">
+                                        <svg class="w-5 h-5 mr-3" :class="'text-' + item.divisiColor + '-500'"
+                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <span x-text="item.agenda.waktu"></span>
+                                    </div>
+                                    <div class="flex items-center text-sm font-medium text-gray-500">
+                                        <svg class="w-5 h-5 mr-3" :class="'text-' + item.divisiColor + '-500'"
+                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
+                                            </path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        </svg>
+                                        <span x-text="item.agenda.lokasi"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </template>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Berita Section -->
+    <section id="berita" class="py-24 bg-gray-50 gsap-fade-up min-h-screen flex flex-col justify-center">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold text-center mb-16 text-himatep-green">Berita Terkini</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <?php if (empty($berita_list)): ?>
+                    <div class="col-span-full text-center py-10 text-gray-500">
+                        Belum ada berita yang dipublikasikan.
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($berita_list as $berita): ?>
+                        <div
+                            class="border border-gray-400 bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 card-hover">
+                            <img src="<?php echo htmlspecialchars($berita['gambar']); ?>"
+                                alt="<?php echo htmlspecialchars($berita['judul']); ?>" class="w-full h-48 object-cover">
+                            <div class="p-6">
+                                <span
+                                    class="text-xs font-bold text-<?php echo $berita['kategori_color']; ?>-600 bg-<?php echo $berita['kategori_color']; ?>-100 px-3 py-1 rounded-full">
+                                    <?php echo htmlspecialchars($berita['kategori']); ?>
+                                </span>
+                                <h3 class="text-xl font-bold mt-4 mb-2"><?php echo htmlspecialchars($berita['judul']); ?></h3>
+                                <p class="text-gray-600 text-sm mb-4 line-clamp-3">
+                                    <?php echo htmlspecialchars($berita['ringkasan']); ?>
+                                </p>
+                                <a href="berita/<?php echo htmlspecialchars($berita['slug']); ?>" class="text-himatep-green font-semibold hover:underline">
+                                    Baca selengkapnya &rarr;
+                                </a>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+
+            <div class="mt-12 text-center">
+                <a href="berita.php"
+                    class="inline-flex items-center justify-center px-8 py-3 border-2 border-himatep-green text-himatep-green font-bold rounded-full hover:bg-himatep-green hover:text-white transition-colors duration-300">
+                    Lihat Semua Berita
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Suara Mahasiswa -->
+    <section id="aspirasi" class="py-24 bg-gray-50 gsap-fade-up min-h-screen flex flex-col justify-center">
+        <div class="max-w-3xl mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-4 text-himatep-green">Suara Mahasiswa</h2>
+            <p class="text-center text-gray-600 mb-12">Sampaikan aspirasi, kritik, dan saran Anda untuk kemajuan
+                bersama.</p>
+
+            <?php if(isset($_GET['status'])): ?>
+                <div id="notif-aspirasi">
+                    <?php if($_GET['status'] == 'success'): ?>
+                        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-2xl mb-8 text-center shadow-lg">
+                            <strong>Berhasil!</strong> Aspirasi Anda telah kami terima. Terima kasih!
+                        </div>
+                    <?php elseif($_GET['status'] == 'error'): ?>
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-2xl mb-8 text-center shadow-lg">
+                            <strong>Gagal!</strong> Terjadi kesalahan saat mengirim. Silakan coba lagi.
+                            <?php if(isset($_GET['msg'])): ?>
+                                <br><span class="text-xs opacity-75 italic">(Error: <?= htmlspecialchars($_GET['msg']) ?>)</span>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+                <script>
+                    // Hapus parameter URL agar tidak muncul lagi saat di-refresh
+                    if (window.history.replaceState) {
+                        const url = new URL(window.location);
+                        url.searchParams.delete('status');
+                        url.searchParams.delete('msg');
+                        window.history.replaceState({}, document.title, url.pathname + url.hash);
+                    }
+                    
+                    // Hilangkan notifikasi secara halus setelah 5 detik
+                    setTimeout(() => {
+                        const notif = document.getElementById('notif-aspirasi');
+                        if (notif) {
+                            notif.style.transition = 'opacity 1s ease';
+                            notif.style.opacity = '0';
+                            setTimeout(() => notif.remove(), 1000);
+                        }
+                    }, 5000);
+                </script>
+            <?php endif; ?>
+
+            <form action="php/submit_aspirasi.php" method="POST"
+                class="bg-white p-8 rounded-3xl shadow-lg border border-gray-400">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Nama Lengkap (Opsional)</label>
+                        <input type="text" name="nama"
+                            class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 transition"
+                            placeholder="Samaran dibolehkan">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Gmail (Opsional)</label>
+                        <input type="email" name="email"
+                            class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 transition"
+                            placeholder="Untuk balasan">
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Jenis Suara</label>
+                    <select name="jenis"
+                        class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 transition">
+                        <option value="Aspirasi">Aspirasi Program</option>
+                        <option value="Kritik">Kritik Membangun</option>
+                        <option value="Saran">Saran Inovasi</option>
+                        <option value="Laporan">Laporan Fasilitas</option>
+                    </select>
+                </div>
+                <div class="mb-8">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Pesan Anda *</label>
+                    <textarea name="pesan" rows="5"
+                        class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 transition"
+                        required placeholder="Tuliskan pesan Anda di sini..."></textarea>
+                </div>
+                <button type="submit"
+                    class="w-full bg-himatep-green hover:bg-green-800 text-white font-bold py-4 px-6 rounded-xl transition shadow-lg transform hover:-translate-y-1">Kirim
+                    Aspirasi</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Narahubung -->
+    <section id="kontak" class="py-24 mb-16 bg-white gsap-fade-up min-h-screen flex flex-col justify-center">
+        <div class="max-w-7xl mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-16 text-himatep-green">Narahubung</h2>
+            <div class="flex justify-center">
+                <!-- Flip Card GSAP -->
+                <div class="w-72 h-96 flip-card cursor-pointer">
+                    <div class="flip-card-inner shadow-2xl rounded-3xl border border-gray-400">
+                        <!-- Front -->
+                        <div class="flip-card-front flex flex-col items-center justify-center p-8 bg-gradient-to-br">
+                            <div
+                                class="w-28 h-28 bg-green-100 rounded-full mb-6 flex items-center justify-center shadow-inner">
+                                <svg class="w-14 h-14 text-himatep-green" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z">
+                                    </path>
+                                </svg>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-800">Humas HIMATEP</h3>
+                            <p class="text-green-600 mt-3 font-medium bg-green-50 px-4 py-1 rounded-full text-sm">
+                                "placeholder"</p>
+                        </div>
+                        <!-- Back -->
+                        <div
+                            class="flip-card-back p-8 rounded-3xl bg-himatep-green flex flex-col items-center text-center">
+                            <h3 class="text-2xl font-bold mb-6 text-white border-b border-green-700 pb-2 w-full">Hubungi
+                                Kami</h3>
+                            <div class="space-y-4 mb-8 text-green-50 w-full">
+                                <div>
+                                    <p class="text-xs uppercase tracking-wider text-green-300">WhatsApp</p>
+                                    <p class="font-bold text-lg">+62 812-3456-7890</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs uppercase tracking-wider text-green-300">Email</p>
+                                    <p class="font-bold text-lg">himatep@unm.ac.id</p>
+                                </div>
+                            </div>
+                            <a href="#"
+                                class="bg-white text-himatep-green px-6 py-3 rounded-full font-bold hover:bg-gray-100 transition shadow-lg w-full">Chat
+                                Sekarang</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-himatep-dark text-white py-16 relative overflow-hidden">
+        <!-- Decoration -->
+        <div
+            class="absolute top-0 right-0 w-64 h-64 bg-green-900 rounded-full blur-3xl opacity-20 transform translate-x-1/2 -translate-y-1/2">
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-12 relative z-10">
+            <div class="md:col-span-2">
+                <div class="flex items-center gap-3 mb-6">
+                    <img src="images/logo-himatep.png" alt="Logo" class="h-12 w-12 bg-white rounded-full p-1"
+                        onerror="this.src='https://via.placeholder.com/50x50.png?text=Logo'">
+                    <span class="text-2xl font-bold">HIMATEP FIP UNM</span>
+                </div>
+                <p class="text-gray-400 mb-6 max-w-md leading-relaxed">Wadah kreasi, inovasi, dan pengabdian mahasiswa
+                    Teknologi Pendidikan menuju generasi unggul dan berkarakter.</p>
+                <!-- Social Media -->
+                <div class="flex space-x-4">
+                    <a href="#"
+                        class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-himatep-green transition"><svg
+                            class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
+                        </svg></a>
+                    <a href="#"
+                        class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-himatep-green transition"><svg
+                            class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                        </svg></a>
+                </div>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold mb-6 border-b border-gray-800 pb-2 inline-block">Tautan Cepat</h3>
+                <ul class="space-y-3 text-gray-400">
+                    <li><a href="#hero" class="hover:text-himatep-light transition flex items-center"><span
+                                class="mr-2">&rsaquo;</span> Beranda</a></li>
+                    <li><a href="profile.php" class="hover:text-himatep-light transition flex items-center"><span
+                                class="mr-2">&rsaquo;</span> Profil</a></li>
+                    <li><a href="proker.php" class="hover:text-himatep-light transition flex items-center"><span
+                                class="mr-2">&rsaquo;</span> Program Kerja</a></li>
+                    <li><a href="berita.php" class="hover:text-himatep-light transition flex items-center"><span
+                                class="mr-2">&rsaquo;</span> Berita</a></li>
+                    <li><a href="admin/login.php" class="hover:text-himatep-light transition flex items-center"><span
+                                class="mr-2">&rsaquo;</span> Admin Login</a></li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold mb-6 border-b border-gray-800 pb-2 inline-block">Sekretariat</h3>
+                <address class="text-gray-400 not-italic leading-relaxed">
+                    Gedung PKM FIP UNM<br>
+                    Kampus Tidung, Gn. Sari<br>
+                    Makassar, Sulawesi Selatan<br>
+                    Kode Pos 90222
+                </address>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 mt-12 pt-8 border-t border-gray-800 text-center text-gray-500 text-sm">
+            &copy; 2026 HIMATEP FIP UNM. All rights reserved. Designed with ❤️
+        </div>
+    </footer>
+
+
+    <!-- Scripts External -->
+    <script>
+        const dataProgram = <?php echo $data_program_json; ?>;
+    </script>
+    <script src="js/calendar.js"></script>
+    <script src="js/animations.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>
