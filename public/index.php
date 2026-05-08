@@ -78,8 +78,8 @@ $data_program_json = json_encode(array_map(function($p) {
             theme: {
                 extend: {
                     colors: {
-                        'himatep-green': '#1B5E20',
-                        'himatep-light': '#6efa80', /* Sesuai warna hijau cerah di gambar */
+                        'himatep-green': '#2563EB',
+                        'himatep-light': '#DBEAFE', /* Nuansa biru muda untuk tema baru */
                         'himatep-dark': '#111111',
                     },
                     fontFamily: {
@@ -136,7 +136,7 @@ $data_program_json = json_encode(array_map(function($p) {
                         Mahasiswa</a>
                 </div>
                 <div class="hidden md:flex items-center gap-4">
-                    <a href="admin/login.php" class="text-gray-400 hover:text-himatep-green transition-all p-2 rounded-full hover:bg-green-50" title="Admin Panel">
+                    <a href="admin/login.php" class="text-gray-400 hover:text-himatep-green transition-all p-2 rounded-full hover:bg-blue-50" title="Admin Panel">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                         </svg>
@@ -144,7 +144,7 @@ $data_program_json = json_encode(array_map(function($p) {
                     <div class="relative" x-data="{ dropdownOpen: false }" @mouseenter="dropdownOpen = true"
                         @mouseleave="dropdownOpen = false">
                     <a href="#kontak"
-                        class="bg-green-400 hover:bg-green-500 text-himatep-dark px-6 py-2 rounded-full font-medium transition shadow-md flex items-center gap-2 focus:outline-none">
+                        class="bg-blue-400 hover:bg-blue-500 text-himatep-dark px-6 py-2 rounded-full font-medium transition shadow-md flex items-center gap-2 focus:outline-none">
                         Narahubung <svg class="w-4 h-4 transition-transform duration-200"
                             :class="{'rotate-180': dropdownOpen}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
@@ -161,21 +161,21 @@ $data_program_json = json_encode(array_map(function($p) {
                         class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl py-2 border border-gray-400 z-50"
                         style="display: none;">
                         <a href="#kontak"
-                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-himatep-green transition flex items-center gap-2"><svg
+                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-himatep-green transition flex items-center gap-2"><svg
                                 class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
                                 </path>
                             </svg> WhatsApp</a>
                         <a href="#kontak"
-                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-himatep-green transition flex items-center gap-2"><svg
+                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-himatep-green transition flex items-center gap-2"><svg
                                 class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
                                 </path>
                             </svg> Email</a>
                         <a href="#kontak"
-                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-himatep-green transition flex items-center gap-2"><svg
+                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-himatep-green transition flex items-center gap-2"><svg
                                 class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1">
@@ -229,7 +229,7 @@ $data_program_json = json_encode(array_map(function($p) {
     <section id="hero" class="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
         <!-- Background Diagonal Sesuai Gambar -->
         <div class="absolute inset-0 z-0 bg-white">
-            <div class="absolute inset-0 bg-himatep-light hero-diagonal"></div>
+            <div class="absolute inset-0 bg-blue-500 hero-diagonal"></div>
         </div>
 
         <div class="relative z-10 text-center px-4 max-w-10xl mx-auto flex flex-col items-center">
@@ -245,7 +245,7 @@ $data_program_json = json_encode(array_map(function($p) {
                 kreasi,
                 inovasi, dan pengabdian mahasiswa Teknologi Pendidikan menuju generasi unggul.</p>
             <a href="#profile"
-                class="bg-green-400 hover:bg-green-500 text-black px-8 py-3 rounded-full font-bold  shadow-xl hero-text inline-block">Profile
+                class="bg-blue-400 hover:bg-blue-500 text-black px-8 py-3 rounded-full font-bold  shadow-xl hero-text inline-block">Profile
                 Kami</a>
         </div>
     </section>
@@ -281,7 +281,7 @@ $data_program_json = json_encode(array_map(function($p) {
                     </ul>
 
                     <a href="profile.php"
-                        class="mt-12 justify-center text-center items-center bg-green-400 hover:bg-green-500 text-black  px-8 py-3 rounded-full font-bold  shadow-xl hero-text inline-block">Profile
+                        class="mt-12 justify-center text-center items-center bg-blue-400 hover:bg-blue-500 text-black  px-8 py-3 rounded-full font-bold  shadow-xl hero-text inline-block">Profile
                         Lengkap</a>
 
                 </div>
@@ -350,13 +350,13 @@ $data_program_json = json_encode(array_map(function($p) {
             <h2 class="text-3xl font-bold text-center mb-2 text-himatep-green">Agenda Kegiatan</h2>
             <div class="bg-white rounded-3xl shadow-xl border border-gray-400 p-8">
                 <div class="flex justify-between items-center mb-8">
-                    <button @click="prevMonth()" class="p-3 bg-gray-50 rounded-full hover:bg-green-100 transition"><svg
+                    <button @click="prevMonth()" class="p-3 bg-gray-50 rounded-full hover:bg-blue-100 transition"><svg
                             class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7">
                             </path>
                         </svg></button>
                     <h3 class="text-2xl font-bold text-gray-800" x-text="monthNames[month] + ' ' + year"></h3>
-                    <button @click="nextMonth()" class="p-3 bg-gray-50 rounded-full hover:bg-green-100 transition"><svg
+                    <button @click="nextMonth()" class="p-3 bg-gray-50 rounded-full hover:bg-blue-100 transition"><svg
                             class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
                             </path>
@@ -374,7 +374,7 @@ $data_program_json = json_encode(array_map(function($p) {
                 <div class="grid grid-cols-7 gap-2">
                     <template x-for="(day, index) in days" :key="index">
                         <div class="h-10 md:h-32 border rounded-xl p-2 md:p-3 flex flex-col justify-between transition-all"
-                            :class="{'bg-gray-4 border-transparent opacity-50': day.empty, 'bg-white border-gray-800 hover:border-green-400 cursor-pointer': !day.empty && !day.event, 'bg-green-50 border-green-500 cursor-pointer shadow-sm transform hover:-translate-y-1': day.event}"
+                            :class="{'bg-gray-4 border-transparent opacity-50': day.empty, 'bg-white border-gray-800 hover:border-green-400 cursor-pointer': !day.empty && !day.event, 'bg-blue-50 border-green-500 cursor-pointer shadow-sm transform hover:-translate-y-1': day.event}"
                             @click="!day.empty ? showEvent(day.event) : null">
                             <span x-show="!day.empty" class="text-sm font-bold block text-right"
                                 :class="{'text-green-700': day.event, 'text-gray-700': !day.event}"
@@ -403,7 +403,7 @@ $data_program_json = json_encode(array_map(function($p) {
                     <p class="text-gray-700 mb-6" x-text="selectedEvent?.desc"></p>
                     <div class="flex flex-col gap-3">
                         <a x-show="selectedEvent?.slug" :href="'detail-program.php?slug=' + selectedEvent?.slug"
-                            class="w-full bg-himatep-green hover:bg-green-700 text-white text-center font-bold py-2 px-4 rounded-lg transition shadow-md">Lihat
+                            class="w-full bg-himatep-green hover:bg-blue-700 text-white text-center font-bold py-2 px-4 rounded-lg transition shadow-md">Lihat
                             Detail Program</a>
                         <button @click="selectedEvent = null"
                             class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg transition">Tutup</button>
@@ -519,7 +519,7 @@ $data_program_json = json_encode(array_map(function($p) {
             <?php if(isset($_GET['status'])): ?>
                 <div id="notif-aspirasi">
                     <?php if($_GET['status'] == 'success'): ?>
-                        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-2xl mb-8 text-center shadow-lg">
+                        <div class="bg-blue-100 border border-green-400 text-green-700 px-4 py-3 rounded-2xl mb-8 text-center shadow-lg">
                             <strong>Berhasil!</strong> Aspirasi Anda telah kami terima. Terima kasih!
                         </div>
                     <?php elseif($_GET['status'] == 'error'): ?>
@@ -586,7 +586,7 @@ $data_program_json = json_encode(array_map(function($p) {
                         required placeholder="Tuliskan pesan Anda di sini..."></textarea>
                 </div>
                 <button type="submit"
-                    class="w-full bg-himatep-green hover:bg-green-800 text-white font-bold py-4 px-6 rounded-xl transition shadow-lg transform hover:-translate-y-1">Kirim
+                    class="w-full bg-himatep-green hover:bg-blue-800 text-white font-bold py-4 px-6 rounded-xl transition shadow-lg transform hover:-translate-y-1">Kirim
                     Aspirasi</button>
             </form>
         </div>
@@ -603,7 +603,7 @@ $data_program_json = json_encode(array_map(function($p) {
                         <!-- Front -->
                         <div class="flip-card-front flex flex-col items-center justify-center p-8 bg-gradient-to-br">
                             <div
-                                class="w-28 h-28 bg-green-100 rounded-full mb-6 flex items-center justify-center shadow-inner">
+                                class="w-28 h-28 bg-blue-100 rounded-full mb-6 flex items-center justify-center shadow-inner">
                                 <svg class="w-14 h-14 text-himatep-green" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -612,7 +612,7 @@ $data_program_json = json_encode(array_map(function($p) {
                                 </svg>
                             </div>
                             <h3 class="text-2xl font-bold text-gray-800">Humas HIMATEP</h3>
-                            <p class="text-green-600 mt-3 font-medium bg-green-50 px-4 py-1 rounded-full text-sm">
+                            <p class="text-green-600 mt-3 font-medium bg-blue-50 px-4 py-1 rounded-full text-sm">
                                 "placeholder"</p>
                         </div>
                         <!-- Back -->
@@ -644,7 +644,7 @@ $data_program_json = json_encode(array_map(function($p) {
     <footer class="bg-himatep-dark text-white py-16 relative overflow-hidden">
         <!-- Decoration -->
         <div
-            class="absolute top-0 right-0 w-64 h-64 bg-green-900 rounded-full blur-3xl opacity-20 transform translate-x-1/2 -translate-y-1/2">
+            class="absolute top-0 right-0 w-64 h-64 bg-blue-900 rounded-full blur-3xl opacity-20 transform translate-x-1/2 -translate-y-1/2">
         </div>
 
         <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-12 relative z-10">

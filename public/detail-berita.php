@@ -70,8 +70,8 @@ $page_img = $berita ? $berita['gambar'] : "http://localhost/webHimatep/public/im
             theme: {
                 extend: {
                     colors: {
-                        'himatep-green': '#1B5E20',
-                        'himatep-light': '#6efa80',
+                        'himatep-green': '#2563EB',
+                        'himatep-light': '#DBEAFE',
                         'himatep-dark': '#111111',
                     },
                     fontFamily: {
@@ -90,6 +90,69 @@ $page_img = $berita ? $berita['gambar'] : "http://localhost/webHimatep/public/im
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        .news-content a {
+            color: #2563eb;
+            text-decoration: underline;
+            font-weight: 600;
+        }
+
+        .news-content a:hover {
+            color: #1d4ed8;
+        }
+
+        .news-content ul {
+            list-style: disc;
+            padding-left: 1.5rem;
+            margin: 0.75rem 0;
+        }
+
+        .news-content ol {
+            list-style: decimal;
+            padding-left: 1.5rem;
+            margin: 0.75rem 0;
+        }
+
+        .news-content li {
+            margin: 0.35rem 0;
+        }
+
+        .news-content h2 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            color: #111;
+            line-height: 1.2;
+        }
+
+        .news-content h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            color: #111;
+            line-height: 1.2;
+        }
+
+        .news-content img {
+            width: 100%;
+            height: auto;
+            border-radius: 1rem;
+            margin: 1.5rem 0;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .news-content figcaption {
+            text-align: center;
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: -0.75rem;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+        }
+    </style>
 
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -149,7 +212,7 @@ $page_img = $berita ? $berita['gambar'] : "http://localhost/webHimatep/public/im
                         Mahasiswa</a>
                 </div>
                 <div class="hidden md:flex items-center gap-4">
-                    <a href="admin/login.php" class="text-gray-400 hover:text-himatep-green transition-all p-2 rounded-full hover:bg-green-50" title="Admin Panel">
+                    <a href="admin/login.php" class="text-gray-400 hover:text-himatep-green transition-all p-2 rounded-full hover:bg-blue-50" title="Admin Panel">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                         </svg>
@@ -157,7 +220,7 @@ $page_img = $berita ? $berita['gambar'] : "http://localhost/webHimatep/public/im
                     <div class="relative" x-data="{ dropdownOpen: false }" @mouseenter="dropdownOpen = true"
                         @mouseleave="dropdownOpen = false">
                     <a href="index.php#kontak"
-                        class="bg-green-400 hover:bg-green-500 text-himatep-dark px-6 py-2 rounded-full font-medium transition shadow-md flex items-center gap-2 focus:outline-none">
+                        class="bg-blue-400 hover:bg-blue-500 text-himatep-dark px-6 py-2 rounded-full font-medium transition shadow-md flex items-center gap-2 focus:outline-none">
                         Narahubung
                     </a>
                 </div>
@@ -218,7 +281,7 @@ $page_img = $berita ? $berita['gambar'] : "http://localhost/webHimatep/public/im
             <h1 class="text-3xl font-bold text-gray-800 mb-4">Berita Tidak Ditemukan</h1>
             <p class="text-gray-600 mb-8">Maaf, berita yang Anda cari mungkin telah dihapus atau ID tidak valid.</p>
             <a href="berita.php"
-                class="bg-himatep-green hover:bg-green-900 text-white font-bold py-3 px-8 rounded-full transition shadow-lg inline-block">Kembali
+                class="bg-himatep-green hover:bg-blue-900 text-white font-bold py-3 px-8 rounded-full transition shadow-lg inline-block">Kembali
                 ke Portal Berita</a>
         </div>
 
@@ -266,14 +329,14 @@ $page_img = $berita ? $berita['gambar'] : "http://localhost/webHimatep/public/im
             </figure>
 
             <!-- Isi Konten Artikel -->
-            <div class="prose prose-lg prose-green max-w-none text-gray-700 leading-relaxed bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-gray-400"
+            <div class="news-content prose prose-lg prose-blue max-w-none text-gray-700 leading-relaxed bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-gray-400"
                 x-html="berita?.isi">
                 <!-- Konten akan di-inject di sini oleh Alpine -->
             </div>
 
             <!-- Share Box (Statik simulasi) -->
             <div
-                class="mt-12 bg-green-50 p-6 rounded-2xl border border-green-100 flex flex-col md:flex-row items-center justify-between">
+                class="mt-12 bg-blue-50 p-6 rounded-2xl border border-green-100 flex flex-col md:flex-row items-center justify-between">
                 <div class="mb-4 md:mb-0">
                     <h4 class="font-bold text-gray-800">Bagikan artikel ini:</h4>
                 </div>
@@ -306,7 +369,7 @@ $page_img = $berita ? $berita['gambar'] : "http://localhost/webHimatep/public/im
     <footer class="bg-himatep-dark text-white py-16 relative overflow-hidden">
         <!-- Decoration -->
         <div
-            class="absolute top-0 right-0 w-64 h-64 bg-green-900 rounded-full blur-3xl opacity-20 transform translate-x-1/2 -translate-y-1/2">
+            class="absolute top-0 right-0 w-64 h-64 bg-blue-900 rounded-full blur-3xl opacity-20 transform translate-x-1/2 -translate-y-1/2">
         </div>
 
         <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-12 relative z-10">

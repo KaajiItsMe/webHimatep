@@ -55,8 +55,8 @@ $proker_json = json_encode(array_map(function($p) {
             theme: {
                 extend: {
                     colors: {
-                        'himatep-green': '#1B5E20',
-                        'himatep-light': '#6efa80',
+                        'himatep-green': '#2563EB',
+                        'himatep-light': '#DBEAFE',
                         'himatep-dark': '#111111',
                     },
                     fontFamily: {
@@ -115,7 +115,7 @@ $proker_json = json_encode(array_map(function($p) {
                 <div class="hidden md:block relative" x-data="{ dropdownOpen: false }" @mouseenter="dropdownOpen = true"
                     @mouseleave="dropdownOpen = false">
                     <a href="#kontak"
-                        class="bg-green-400 hover:bg-green-500 text-himatep-dark px-6 py-2 rounded-full font-medium transition shadow-md flex items-center gap-2 focus:outline-none">
+                        class="bg-blue-400 hover:bg-blue-500 text-himatep-dark px-6 py-2 rounded-full font-medium transition shadow-md flex items-center gap-2 focus:outline-none">
                         Narahubung <svg class="w-4 h-4 transition-transform duration-200"
                             :class="{'rotate-180': dropdownOpen}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
@@ -132,21 +132,21 @@ $proker_json = json_encode(array_map(function($p) {
                         class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl py-2 border border-gray-400 z-50"
                         style="display: none;">
                         <a href="index.php#kontak"
-                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-himatep-green transition flex items-center gap-2"><svg
+                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-himatep-green transition flex items-center gap-2"><svg
                                 class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
                                 </path>
                             </svg> WhatsApp</a>
                         <a href="index.php#kontak"
-                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-himatep-green transition flex items-center gap-2"><svg
+                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-himatep-green transition flex items-center gap-2"><svg
                                 class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
                                 </path>
                             </svg> Email</a>
                         <a href="index.php#kontak"
-                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-himatep-green transition flex items-center gap-2"><svg
+                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-himatep-green transition flex items-center gap-2"><svg
                                 class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1">
@@ -191,12 +191,12 @@ $proker_json = json_encode(array_map(function($p) {
     </nav>
 
     <!-- Header Section -->
-    <section class="pt-32 pb-12 bg-himatep-light relative overflow-hidden">
-        <div class="absolute inset-0 backdrop-blur-sm z-0"></div>
+    <section class="pt-40 pb-24 relative overflow-hidden min-h-[800px] flex items-center justify-center bg-himatep-dark">
+        <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1920&q=80" alt="Background Program Kerja" class="absolute inset-0 w-full h-full object-cover z-0 opacity-40 mix-blend-luminosity">
+        <div class="absolute inset-0 bg-gradient-to-t from-himatep-green/40 to-transparent z-0"></div>
         <div class="max-w-7xl mx-auto px-4 relative z-10 text-center">
-            <h1 class="text-4xl md:text-5xl font-bold text-himatep-dark mb-4">Program Kerja</h1>
-            <p class="text-lg text-gray-800 max-w-2xl mx-auto font-medium">Dedikasi kami melalui program kerja nyata
-                untuk memajukan mahasiswa Teknologi Pendidikan dan masyarakat luas.</p>
+            <h1 class="text-5xl md:text-7xl font-bold text-white mb-6 drop-shadow-lg">Program Kerja</h1>
+            <p class="text-xl text-gray-100 max-w-2xl mx-auto font-medium drop-shadow-md">Dedikasi kami melalui program kerja nyata untuk memajukan mahasiswa Teknologi Pendidikan dan masyarakat luas.</p>
         </div>
     </section>
 
@@ -312,7 +312,7 @@ $proker_json = json_encode(array_map(function($p) {
     <footer class="bg-himatep-dark text-white py-16 relative overflow-hidden">
         <!-- Decoration -->
         <div
-            class="absolute top-0 right-0 w-64 h-64 bg-green-900 rounded-full blur-3xl opacity-20 transform translate-x-1/2 -translate-y-1/2">
+            class="absolute top-0 right-0 w-64 h-64 bg-blue-900 rounded-full blur-3xl opacity-20 transform translate-x-1/2 -translate-y-1/2">
         </div>
 
         <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-12 relative z-10">
@@ -374,7 +374,7 @@ $proker_json = json_encode(array_map(function($p) {
     <script>
         const dataProgram = <?php echo $proker_json; ?>;
     </script>
-    <script src="js/animations.js"></script>
+    <script src="js/animations.js?v=1.1"></script>
     <script src="js/main.js"></script>
 </body>
 

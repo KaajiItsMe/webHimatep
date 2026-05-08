@@ -11,8 +11,8 @@
             theme: {
                 extend: {
                     colors: {
-                        'himatep-green': '#1B5E20',
-                        'himatep-light': '#6efa80',
+                        'himatep-green': '#2563EB',
+                        'himatep-light': '#DBEAFE',
                         'himatep-dark': '#111111',
                     },
                     fontFamily: {
@@ -40,7 +40,7 @@
         <p class="text-gray-600 text-lg mb-10 max-w-md mx-auto">Terjadi kesalahan pada sistem internal kami. Tim IT HIMATEP sedang berusaha memperbaikinya secepat mungkin.</p>
 
         <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <a href="/webHimatep/public/index.php" class="px-8 py-4 bg-himatep-green text-white font-bold rounded-full shadow-lg hover:bg-green-800 transition transform hover:-translate-y-1">
+            <a href="/webHimatep/public/index.php" class="px-8 py-4 bg-himatep-green text-white font-bold rounded-full shadow-lg hover:bg-blue-800 transition transform hover:-translate-y-1">
                 Coba Segarkan Halaman
             </a>
             <a href="https://wa.me/628123456789" class="px-8 py-4 border-2 border-gray-300 text-gray-600 font-bold rounded-full hover:bg-gray-100 transition">

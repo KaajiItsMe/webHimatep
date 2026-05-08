@@ -115,98 +115,87 @@ foreach ($pengurus_list as $p) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kelola Pengurus - Admin HIMATEP</title>
+    <?php include '../includes/meta_icons.php'; ?>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="../css/style.css">
     <style>
-        /* CSS untuk Org Chart (Preview) */
-        .org-tree {
+        /* KSB Modern Cards - Preview Sync */
+        .ksb-wrapper {
             display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
             justify-content: center;
-            overflow-x: auto;
-            padding-bottom: 20px;
+            padding: 2rem 0;
         }
-        .org-tree ul {
-            padding-top: 40px;
+
+        @media (min-width: 768px) {
+            .ksb-wrapper {
+                gap: 1.5rem;
+            }
+        }
+
+        .ksb-card {
             position: relative;
-            transition: all 0.5s;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start; /* Cegah li stretch ke bawah */
-        }
-        .org-tree li {
-            text-align: center;
-            list-style-type: none;
-            position: relative;
-            padding: 40px 5px 0 5px;
-            transition: all 0.5s;
-        }
-        .org-tree li::before, .org-tree li::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 50%;
-            border-top: 2px solid #9ca3af; /* Warna garis yang jelas */
-            width: 50%;
-            height: 40px;
-        }
-        .org-tree li::after {
-            right: auto;
-            left: 50%;
-            border-left: 2px solid #9ca3af;
-        }
-        .org-tree li:only-child::after, .org-tree li:only-child::before {
-            display: none;
-        }
-        .org-tree li:only-child {
-            padding-top: 0;
-        }
-        .org-tree li:first-child::before, .org-tree li:last-child::after {
-            border: 0 none;
-        }
-        .org-tree li:last-child::before {
-            border-right: 2px solid #9ca3af;
-            border-radius: 0 5px 0 0;
-        }
-        .org-tree li:first-child::after {
-            border-radius: 5px 0 0 0;
-        }
-        .org-tree ul ul::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 50%;
-            border-left: 2px solid #9ca3af;
-            width: 0;
-            height: 40px;
-        }
-        .org-node {
-            display: inline-flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            width: 100%;
+            max-width: 280px;
+            height: 420px;
             background: white;
-            border: 1px solid #e5e7eb;
-            padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            min-width: 150px;
-            max-width: 150px;
-            height: max-content; /* Paksa tingginya mengikuti konten */
-            position: relative;
-            z-index: 10;
+            overflow: hidden;
+            transform: skewX(-12deg);
+            border: 3px solid #2563EB;
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.1);
         }
-        .org-avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
+
+        .ksb-image-container {
+            position: absolute;
+            inset: 0;
+            width: 140%; 
+            left: -20%;
+            transform: skewX(12deg);
+        }
+
+        .ksb-image-container img {
+            width: 100%;
+            height: 100%;
             object-fit: cover;
-            margin: 0 auto 10px auto;
-            border: 2px solid #1B5E20;
-            padding: 2px;
-            background: white;
+        }
+
+        .ksb-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, #2563EB 0%, #2563EB 25%, rgba(37, 99, 235, 0.6) 40%, transparent 60%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center; /* Center horizontally */
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .ksb-content {
+            transform: skewX(12deg);
+            text-align: center;
+        }
+
+        .ksb-nama {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: white;
+            font-style: italic;
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+
+        .ksb-jabatan {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: white;
+            font-style: italic;
+            opacity: 0.95;
+            text-transform: capitalize;
         }
     </style>
     <script>
@@ -214,8 +203,8 @@ foreach ($pengurus_list as $p) {
             theme: {
                 extend: {
                     colors: {
-                        'himatep-green': '#1B5E20',
-                        'himatep-light': '#6efa80',
+                        'himatep-green': '#2563EB',
+                        'himatep-light': '#DBEAFE',
                     }
                 }
             }
@@ -252,7 +241,7 @@ foreach ($pengurus_list as $p) {
     <div x-show="sidebarOpen" @click="sidebarOpen = false" class="fixed inset-0 bg-black/50 z-30 lg:hidden" style="display:none;"></div>
 
     <!-- Sidebar (Reused standard sidebar) -->
-    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" class="fixed lg:static inset-y-0 left-0 w-64 bg-[#1B5E20] text-white flex flex-col shadow-xl z-40 transition-transform duration-300 lg:translate-x-0">
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" class="fixed lg:static inset-y-0 left-0 w-64 bg-[#2563EB] text-white flex flex-col shadow-xl z-40 transition-transform duration-300 lg:translate-x-0">
         <div class="p-6 border-b border-green-800 flex items-center justify-between">
             <span class="text-xl font-bold text-white">Admin Panel</span>
             <button @click="sidebarOpen = false" class="lg:hidden text-green-200">
@@ -260,11 +249,11 @@ foreach ($pengurus_list as $p) {
             </button>
         </div>
         <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-            <a href="dashboard.php" class="block py-3 px-4 rounded-lg hover:bg-green-800 transition text-green-100">Dashboard</a>
-            <a href="manage_news.php" class="block py-3 px-4 rounded-lg hover:bg-green-800 transition text-green-100">Kelola Berita</a>
-            <a href="manage_proker.php" class="block py-3 px-4 rounded-lg hover:bg-green-800 transition text-green-100">Program Kerja</a>
-            <a href="manage_pengurus.php" class="block py-3 px-4 rounded-lg bg-green-800 font-medium">Struktur Pengurus</a>
-            <a href="view_aspirasi.php" class="block py-3 px-4 rounded-lg hover:bg-green-800 transition text-green-100">Suara Mahasiswa</a>
+            <a href="dashboard.php" class="block py-3 px-4 rounded-lg hover:bg-blue-800 transition text-green-100">Dashboard</a>
+            <a href="manage_news.php" class="block py-3 px-4 rounded-lg hover:bg-blue-800 transition text-green-100">Kelola Berita</a>
+            <a href="manage_proker.php" class="block py-3 px-4 rounded-lg hover:bg-blue-800 transition text-green-100">Program Kerja</a>
+            <a href="manage_pengurus.php" class="block py-3 px-4 rounded-lg bg-blue-800 font-medium">Struktur Pengurus</a>
+            <a href="view_aspirasi.php" class="block py-3 px-4 rounded-lg hover:bg-blue-800 transition text-green-100">Suara Mahasiswa</a>
         </nav>
     </aside>
 
@@ -281,7 +270,7 @@ foreach ($pengurus_list as $p) {
         <!-- Content -->
         <div class="flex-1 p-8 overflow-y-auto">
             <?php if ($message): ?>
-            <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded shadow-sm">
+            <div class="bg-blue-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded shadow-sm">
                 <?= htmlspecialchars($message) ?>
             </div>
             <?php endif; ?>
@@ -289,7 +278,7 @@ foreach ($pengurus_list as $p) {
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="p-6 border-b border-gray-200 flex justify-between items-center bg-gray-50">
                     <h3 class="text-lg font-semibold text-gray-800">Daftar Pengurus</h3>
-                    <button @click="openModal('add')" class="bg-himatep-green hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm">
+                    <button @click="openModal('add')" class="bg-himatep-green hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm">
                         + Tambah Pengurus
                     </button>
                 </div>
@@ -317,7 +306,7 @@ foreach ($pengurus_list as $p) {
                                     </div>
                                 </td>
                                 <td class="p-4">
-                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-semibold"><?= htmlspecialchars($p['divisi']) ?></span>
+                                    <span class="bg-blue-100 text-green-800 px-2 py-1 rounded text-xs font-semibold"><?= htmlspecialchars($p['divisi']) ?></span>
                                 </td>
                                 <td class="p-4 flex gap-2">
                                     <?php
@@ -339,82 +328,86 @@ foreach ($pengurus_list as $p) {
                 </div>
             </div>
 
-            <!-- Preview Struktur Organisasi (Org Chart) -->
-            <div class="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <!-- Preview Struktur Organisasi (KSB Highlight) -->
+            <div class="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-12">
                 <div class="p-6 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
-                    <h3 class="text-lg font-semibold text-gray-800">Preview Struktur Keseluruhan</h3>
-                    <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded font-medium">BPH & Divisi</span>
+                    <h3 class="text-lg font-semibold text-gray-800">Preview Tampilan KSB (Live)</h3>
+                    <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded font-medium">Visual Card Only</span>
                 </div>
-                <div class="p-8 overflow-x-auto">
-                    <div class="org-tree w-full flex justify-center min-w-max">
-                        <?php if(!empty($bph_list)): ?>
-                        <ul>
-                            <li>
-                                <!-- Level 1: Ketua Umum -->
-                                <div class="org-node border-green-600 border-2">
-                                    <img src="../images/pengurus/<?= htmlspecialchars($bph_list[0]['foto'] ?? 'default.png') ?>" onerror="this.src='../images/logo-himatep.png'" alt="<?= htmlspecialchars($bph_list[0]['jabatan']) ?>" class="org-avatar">
-                                    <h4 class="font-bold text-gray-800 text-sm"><?= htmlspecialchars($bph_list[0]['nama']) ?></h4>
-                                    <p class="text-xs text-green-700 font-bold mt-1"><?= htmlspecialchars($bph_list[0]['jabatan']) ?></p>
-                                </div>
-                                
-                                <?php if(isset($bph_list[1])): ?>
-                                <ul>
-                                    <li>
-                                        <!-- Level 2: Wakil Ketua Umum -->
-                                        <div class="org-node border-green-500 border-2">
-                                            <img src="../images/pengurus/<?= htmlspecialchars($bph_list[1]['foto'] ?? 'default.png') ?>" onerror="this.src='../images/logo-himatep.png'" alt="<?= htmlspecialchars($bph_list[1]['jabatan']) ?>" class="org-avatar">
-                                            <h4 class="font-bold text-gray-800 text-sm"><?= htmlspecialchars($bph_list[1]['nama']) ?></h4>
-                                            <p class="text-xs text-green-700 font-semibold mt-1"><?= htmlspecialchars($bph_list[1]['jabatan']) ?></p>
+                <div class="p-8 border-b border-gray-100">
+                    <div class="ksb-wrapper">
+                        <?php if (!empty($bph_list)): ?>
+                            <?php foreach ($bph_list as $p): 
+                                $foto_path = '../images/pengurus/' . ($p['foto'] ?? 'default.png');
+                            ?>
+                                <div class="ksb-card">
+                                    <div class="ksb-image-container">
+                                        <img src="<?= htmlspecialchars($foto_path) ?>" 
+                                             onerror="this.src='../images/logo-himatep.png'" 
+                                             alt="<?= htmlspecialchars($p['nama']) ?>">
+                                    </div>
+                                    <div class="ksb-overlay">
+                                        <div class="ksb-content">
+                                            <p class="ksb-jabatan"><?= htmlspecialchars($p['jabatan']) ?></p>
+                                            <h3 class="ksb-nama"><?= htmlspecialchars($p['nama']) ?></h3>
                                         </div>
-                                        
-                                        <?php if(count($bph_list) > 2 || !empty($divisi_list)): ?>
-                                        <ul>
-                                            <!-- Level 3: BPH Sisa (Sekretaris, Bendahara, dll) -->
-                                            <?php for($i=2; $i<count($bph_list); $i++): ?>
-                                            <li>
-                                                <div class="org-node">
-                                                    <img src="../images/pengurus/<?= htmlspecialchars($bph_list[$i]['foto'] ?? 'default.png') ?>" onerror="this.src='../images/logo-himatep.png'" alt="<?= htmlspecialchars($bph_list[$i]['jabatan']) ?>" class="org-avatar">
-                                                    <h4 class="font-bold text-gray-800 text-sm"><?= htmlspecialchars($bph_list[$i]['nama']) ?></h4>
-                                                    <p class="text-xs text-green-700 font-semibold mt-1"><?= htmlspecialchars($bph_list[$i]['jabatan']) ?></p>
-                                                </div>
-                                            </li>
-                                            <?php endfor; ?>
-
-                                            <!-- Level 3: Divisi-Divisi -->
-                                            <?php foreach($divisi_list as $nama_divisi => $anggota_divisi): ?>
-                                            <li>
-                                                <div class="org-node bg-green-50 border-green-500 border-2 shadow-sm">
-                                                    <h4 class="font-bold text-green-800 text-sm uppercase mt-2 mb-2">Divisi<br><?= htmlspecialchars($nama_divisi) ?></h4>
-                                                </div>
-                                                
-                                                <?php if(!empty($anggota_divisi)): ?>
-                                                <ul>
-                                                    <!-- Level 4: Anggota Divisi -->
-                                                    <?php foreach($anggota_divisi as $anggota): 
-                                                        $is_koordinator = stripos($anggota['jabatan'], 'Koordinator') !== false;
-                                                    ?>
-                                                    <li>
-                                                        <div class="org-node <?= $is_koordinator ? 'border-green-400 bg-green-50/30' : '' ?>">
-                                                            <img src="../images/pengurus/<?= htmlspecialchars($anggota['foto'] ?? 'default.png') ?>" onerror="this.src='../images/logo-himatep.png'" alt="<?= htmlspecialchars($anggota['jabatan']) ?>" class="org-avatar">
-                                                            <h4 class="font-bold text-gray-800 text-sm"><?= htmlspecialchars($anggota['nama']) ?></h4>
-                                                            <p class="text-[10px] text-gray-600 font-bold mt-1 uppercase bg-gray-100 px-2 py-1 rounded inline-block"><?= htmlspecialchars($anggota['jabatan']) ?></p>
-                                                        </div>
-                                                    </li>
-                                                    <?php endforeach; ?>
-                                                </ul>
-                                                <?php endif; ?>
-                                            </li>
-                                            <?php endforeach; ?>
-
-                                        </ul>
-                                        <?php endif; ?>
-                                    </li>
-                                </ul>
-                                <?php endif; ?>
-                            </li>
-                        </ul>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
                         <?php else: ?>
-                            <div class="bg-gray-100 px-6 py-4 rounded-xl text-center border border-gray-300 w-full text-gray-500">Belum ada data pengurus untuk divisualisasikan.</div>
+                            <div class="col-span-full text-center py-12 text-gray-400 italic">Belum ada data BPH.</div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <!-- Preview Deskripsi (Sesuai Format Profile.php) -->
+                <div class="bg-gray-100 p-8">
+                    <div class="flex items-center gap-2 mb-8">
+                        <div class="w-1.5 h-6 bg-yellow-500 rounded-full"></div>
+                        <h4 class="font-bold text-gray-800 uppercase text-sm tracking-widest">Live Preview Detail Profil</h4>
+                    </div>
+                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                        <?php if (!empty($bph_list)): ?>
+                            <?php foreach ($bph_list as $p): 
+                                $foto_path = '../images/pengurus/' . ($p['foto'] ?? 'default.png');
+                            ?>
+                                <div class="bg-white rounded-3xl shadow-md border border-gray-100 flex flex-col md:flex-row overflow-hidden group min-h-[300px]">
+                                    <!-- Photo Side (Kiri) -->
+                                    <div class="md:w-2/5 bg-gray-50 relative overflow-hidden border-r border-gray-100">
+                                        <div class="absolute w-32 h-32 bg-blue-50 rounded-full -top-10 -left-10 z-0 opacity-50"></div>
+                                        <img src="<?= htmlspecialchars($foto_path) ?>" 
+                                             onerror="this.src='../images/logo-himatep.png'" 
+                                             alt="<?= htmlspecialchars($p['nama']) ?>"
+                                             class="w-full h-full object-cover relative z-10 group-hover:scale-105 transition-transform duration-500">
+                                    </div>
+
+                                    <!-- Info Side (Kanan) -->
+                                    <div class="md:w-3/5 p-8 flex flex-col justify-center bg-white relative z-10">
+                                        <!-- Jabatan Badge -->
+                                        <span class="text-[10px] font-bold text-yellow-600 bg-yellow-50 px-3 py-1.5 rounded-full w-max mb-4 uppercase tracking-wider border border-yellow-200">
+                                            <?= htmlspecialchars($p['jabatan']) ?>
+                                        </span>
+                                        
+                                        <!-- Nama -->
+                                        <h5 class="text-xl font-bold text-gray-800 mb-6 leading-tight">
+                                            <?= htmlspecialchars($p['nama']) ?>
+                                        </h5>
+                                        
+                                        <!-- Deskripsi Section -->
+                                        <div class="mt-2">
+                                            <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 border-b border-gray-100 pb-1">Deskripsi</h3>
+                                            <p class="text-gray-600 text-xs leading-relaxed line-clamp-4">
+                                                <?= htmlspecialchars($p['deskripsi'] ?: 'Tidak ada deskripsi yang ditambahkan untuk pengurus ini.') ?>
+                                            </p>
+                                        </div>
+
+                                        <!-- Mini Logo Decoration -->
+                                        <div class="mt-6 flex items-center opacity-20 grayscale">
+                                            <img src="../images/logo-himatep.png" alt="Logo" class="w-6 h-6">
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -520,7 +513,7 @@ foreach ($pengurus_list as $p) {
                     
                     <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-xl flex justify-end gap-3">
                         <button type="button" @click="modalOpen = false" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg font-medium transition">Batal</button>
-                        <button type="submit" class="px-4 py-2 bg-himatep-green hover:bg-green-700 text-white rounded-lg font-medium transition" x-text="modalMode === 'add' ? 'Simpan Data' : 'Update Data'"></button>
+                        <button type="submit" class="px-4 py-2 bg-himatep-green hover:bg-blue-700 text-white rounded-lg font-medium transition" x-text="modalMode === 'add' ? 'Simpan Data' : 'Update Data'"></button>
                     </div>
                 </form>
             </div>

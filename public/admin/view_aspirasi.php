@@ -57,8 +57,8 @@ try {
             theme: {
                 extend: {
                     colors: {
-                        'himatep-green': '#1B5E20',
-                        'himatep-light': '#6efa80', /* Sesuai warna hijau cerah di gambar */
+                        'himatep-green': '#2563EB',
+                        'himatep-light': '#DBEAFE', /* Nuansa biru muda untuk tema baru */
                         'himatep-dark': '#111111',
                     },
                     fontFamily: {
@@ -79,7 +79,7 @@ try {
     <div x-show="sidebarOpen" @click="sidebarOpen = false" class="fixed inset-0 bg-black/50 z-30 lg:hidden" x-transition style="display:none;"></div>
 
     <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" 
-           class="fixed lg:static inset-y-0 left-0 w-64 bg-[#1B5E20] text-white flex flex-col shadow-xl z-40 transition-transform duration-300 lg:translate-x-0">
+           class="fixed lg:static inset-y-0 left-0 w-64 bg-[#2563EB] text-white flex flex-col shadow-xl z-40 transition-transform duration-300 lg:translate-x-0">
         <div class="p-6 border-b border-green-800 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <img src="../images/logo-himatep.png" alt="Logo" class="h-8 w-8 bg-white rounded-full p-1">
@@ -90,10 +90,11 @@ try {
             </button>
         </div>
         <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-            <a href="dashboard.php" class="block py-3 px-4 rounded-lg hover:bg-green-800 transition text-green-100">Dashboard</a>
-            <a href="manage_news.php" class="block py-3 px-4 rounded-lg hover:bg-green-800 transition text-green-100">Kelola Berita</a>
-            <a href="manage_proker.php" class="block py-3 px-4 rounded-lg hover:bg-green-800 transition text-green-100">Program Kerja</a>
-            <a href="view_aspirasi.php" class="block py-3 px-4 rounded-lg bg-green-800 font-medium">Suara Mahasiswa</a>
+            <a href="dashboard.php" class="block py-3 px-4 rounded-lg hover:bg-blue-800 transition text-green-100">Dashboard</a>
+            <a href="manage_news.php" class="block py-3 px-4 rounded-lg hover:bg-blue-800 transition text-green-100">Kelola Berita</a>
+            <a href="manage_proker.php" class="block py-3 px-4 rounded-lg hover:bg-blue-800 transition text-green-100">Program Kerja</a>
+            <a href="manage_pengurus.php" class="block py-3 px-4 rounded-lg hover:bg-blue-800 transition text-green-100">Struktur Pengurus</a>
+            <a href="view_aspirasi.php" class="block py-3 px-4 rounded-lg bg-blue-800 font-medium">Suara Mahasiswa</a>
         </nav>
         <div class="p-4 border-t border-green-800">
             <a href="logout.php" class="block w-full py-2 px-4 bg-red-500 hover:bg-red-600 rounded text-center font-bold transition shadow">Logout</a>
@@ -122,7 +123,7 @@ try {
 
         <div class="flex-1 p-8 overflow-y-auto">
             <?php if(isset($_GET['success'])): ?>
-                <div class="bg-green-100 text-green-700 p-4 rounded-xl mb-6">Status berhasil diperbarui!</div>
+                <div class="bg-blue-100 text-green-700 p-4 rounded-xl mb-6">Status berhasil diperbarui!</div>
             <?php endif; ?>
             <?php if(isset($_GET['deleted'])): ?>
                 <div class="bg-yellow-100 text-yellow-700 p-4 rounded-xl mb-6">Aspirasi berhasil dihapus.</div>
@@ -154,7 +155,7 @@ try {
                                 <td class="px-6 py-4 text-sm whitespace-pre-wrap max-w-xs text-gray-600"><?= htmlspecialchars($item['pesan']) ?></td>
                                 <td class="px-6 py-4">
                                     <span class="px-3 py-1 rounded-full text-xs font-bold 
-                                        <?= $item['status'] == 'Baru' ? 'bg-red-100 text-red-600' : ($item['status'] == 'Dibaca' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600') ?>">
+                                        <?= $item['status'] == 'Baru' ? 'bg-red-100 text-red-600' : ($item['status'] == 'Dibaca' ? 'bg-blue-100 text-blue-600' : 'bg-blue-100 text-green-600') ?>">
                                         <?= $item['status'] ?>
                                     </span>
                                 </td>

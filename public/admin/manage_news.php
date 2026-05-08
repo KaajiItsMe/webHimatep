@@ -9,6 +9,97 @@ if (!isset($_SESSION['admin_logged_in'])) {
 
 $message = '';
 $error = '';
+$upload_dir = '../images/berita/';
+
+if (!is_dir($upload_dir)) {
+    mkdir($upload_dir, 0777, true);
+}
+
+function normalizeNewsContent($content)
+{
+    $content = trim($content);
+
+    if ($content === '') {
+        return '';
+    }
+
+    $content = preg_replace('/<(\/?)(ul|ol|li|p|h2|h3|blockquote|div|section|article|table|thead|tbody|tr|td|th)\b([^>]*)>/i', "\n<$1$2$3>\n", $content);
+    $lines = preg_split('/\R/', $content);
+    $blocks = [];
+    $paragraphLines = [];
+    $listItems = [];
+    $listType = null;
+
+    $flushParagraph = function () use (&$blocks, &$paragraphLines) {
+        if (!$paragraphLines) {
+            return;
+        }
+
+        $paragraph = implode('<br>', array_map('htmlspecialchars', $paragraphLines));
+        $blocks[] = '<p>' . $paragraph . '</p>';
+        $paragraphLines = [];
+    };
+
+    $flushList = function () use (&$blocks, &$listItems, &$listType) {
+        if (!$listItems || !$listType) {
+            return;
+        }
+
+        $tag = $listType === 'ol' ? 'ol' : 'ul';
+        $items = array_map(function ($item) {
+            return '<li>' . htmlspecialchars($item) . '</li>';
+        }, $listItems);
+
+        $blocks[] = '<' . $tag . '>' . implode('', $items) . '</' . $tag . '>';
+        $listItems = [];
+        $listType = null;
+    };
+
+    foreach ($lines as $line) {
+        $trimmedLine = trim($line);
+
+        if ($trimmedLine === '') {
+            $flushParagraph();
+            $flushList();
+            continue;
+        }
+
+        if (preg_match('/^<\/?(?:ul|ol|li|p|h2|h3|blockquote|div|section|article|table|thead|tbody|tr|td|th)\b[^>]*>$/i', $trimmedLine)) {
+            $flushParagraph();
+            $flushList();
+            $blocks[] = $trimmedLine;
+            continue;
+        }
+
+        if (preg_match('/^(-|\*|•)\s+(.*)$/', $trimmedLine, $matches)) {
+            $flushParagraph();
+            if ($listType !== 'ul') {
+                $flushList();
+                $listType = 'ul';
+            }
+            $listItems[] = $matches[2];
+            continue;
+        }
+
+        if (preg_match('/^\d+\.\s+(.*)$/', $trimmedLine, $matches)) {
+            $flushParagraph();
+            if ($listType !== 'ol') {
+                $flushList();
+                $listType = 'ol';
+            }
+            $listItems[] = $matches[1];
+            continue;
+        }
+
+        $flushList();
+        $paragraphLines[] = $trimmedLine;
+    }
+
+    $flushParagraph();
+    $flushList();
+
+    return implode("\n", $blocks);
+}
 
 // Delete News
 if (isset($_GET['delete']) && isset($_GET['id'])) {
@@ -30,23 +121,37 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $kategori = $_POST['kategori'];
     $kategori_color = $_POST['kategori_color'];
     $penulis = $_POST['penulis'];
-    $gambar = $_POST['gambar'];
+    $gambar = trim($_POST['gambar'] ?? '');
     $ringkasan = $_POST['ringkasan'];
-    $isi = $_POST['isi'];
+    $isi = normalizeNewsContent($_POST['isi']);
     $tanggal = $_POST['tanggal_posting'];
 
-    try {
-        if ($id) {
-            $stmt = $pdo->prepare("UPDATE berita SET judul=?, slug=?, kategori=?, kategori_color=?, penulis=?, gambar=?, ringkasan=?, isi=?, tanggal_posting=? WHERE id=?");
-            $stmt->execute([$judul, $slug, $kategori, $kategori_color, $penulis, $gambar, $ringkasan, $isi, $tanggal, $id]);
-            $message = "Berita berhasil diperbarui!";
-        } else {
-            $stmt = $pdo->prepare("INSERT INTO berita (judul, slug, kategori, kategori_color, penulis, gambar, ringkasan, isi, tanggal_posting) VALUES (?,?,?,?,?,?,?,?,?)");
-            $stmt->execute([$judul, $slug, $kategori, $kategori_color, $penulis, $gambar, $ringkasan, $isi, $tanggal]);
-            $message = "Berita baru berhasil ditambahkan!";
+    if (isset($_FILES['gambar_file']) && $_FILES['gambar_file']['error'] === UPLOAD_ERR_OK) {
+        $file_tmp = $_FILES['gambar_file']['tmp_name'];
+        $file_name = time() . '_' . preg_replace('/[^a-zA-Z0-9.-]/', '_', $_FILES['gambar_file']['name']);
+        if (move_uploaded_file($file_tmp, $upload_dir . $file_name)) {
+            $gambar = 'images/berita/' . $file_name;
         }
-    } catch (PDOException $e) {
-        $error = "Gagal menyimpan berita: " . $e->getMessage();
+    }
+
+    if ($gambar === '') {
+        $error = 'Pilih URL gambar atau upload file gambar.';
+    }
+
+    if (!$error) {
+        try {
+            if ($id) {
+                $stmt = $pdo->prepare("UPDATE berita SET judul=?, slug=?, kategori=?, kategori_color=?, penulis=?, gambar=?, ringkasan=?, isi=?, tanggal_posting=? WHERE id=?");
+                $stmt->execute([$judul, $slug, $kategori, $kategori_color, $penulis, $gambar, $ringkasan, $isi, $tanggal, $id]);
+                $message = "Berita berhasil diperbarui!";
+            } else {
+                $stmt = $pdo->prepare("INSERT INTO berita (judul, slug, kategori, kategori_color, penulis, gambar, ringkasan, isi, tanggal_posting) VALUES (?,?,?,?,?,?,?,?,?)");
+                $stmt->execute([$judul, $slug, $kategori, $kategori_color, $penulis, $gambar, $ringkasan, $isi, $tanggal]);
+                $message = "Berita baru berhasil ditambahkan!";
+            }
+        } catch (PDOException $e) {
+            $error = "Gagal menyimpan berita: " . $e->getMessage();
+        }
     }
 }
 
@@ -77,8 +182,8 @@ if (isset($_GET['edit']) && isset($_GET['id'])) {
             theme: {
                 extend: {
                     colors: {
-                        'himatep-green': '#1B5E20',
-                        'himatep-light': '#6efa80', /* Sesuai warna hijau cerah di gambar */
+                        'himatep-green': '#2563EB',
+                        'himatep-light': '#DBEAFE', /* Nuansa biru muda untuk tema baru */
                         'himatep-dark': '#111111',
                     },
                     fontFamily: {
@@ -89,9 +194,111 @@ if (isset($_GET['edit']) && isset($_GET['id'])) {
             }
         }
     </script>
+    <style>
+        #preview-content a {
+            color: #2563eb;
+            text-decoration: underline;
+            font-weight: 600;
+        }
+
+        #preview-content a:hover {
+            color: #1d4ed8;
+        }
+
+        #preview-content ul {
+            list-style: disc;
+            padding-left: 1.5rem;
+            margin: 0.75rem 0;
+        }
+
+        #preview-content ol {
+            list-style: decimal;
+            padding-left: 1.5rem;
+            margin: 0.75rem 0;
+        }
+
+        #preview-content li {
+            margin: 0.35rem 0;
+        }
+
+        #preview-content h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            color: #111;
+            line-height: 1.25;
+        }
+
+        #preview-content h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: #111;
+            line-height: 1.25;
+        }
+    </style>
     <style> body { font-family: 'Poppins', sans-serif; } </style>
 </head>
-<body class="bg-gray-100 flex h-screen overflow-hidden" x-data="{ sidebarOpen: false }">
+<body class="bg-gray-100 flex h-screen overflow-hidden" x-data="{ sidebarOpen: false, showImageModal: false, imageUrlInput: '', imageCaptionInput: '' }">
+    
+    <!-- Image Insertion Modal -->
+    <div x-show="showImageModal" 
+         class="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         style="display: none;">
+        <div @click.away="showImageModal = false" 
+             class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+             x-transition:enter-end="opacity-100 scale-100 translate-y-0">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <h3 class="text-xl font-bold text-gray-800">Sisipkan Gambar</h3>
+                <button @click="showImageModal = false" class="text-gray-400 hover:text-gray-600 transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-8 space-y-6">
+                <!-- Option 1: Upload -->
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">Opsi 1: Unggah dari Perangkat</label>
+                    <button type="button" @click="document.getElementById('content-image-upload').click()" class="w-full py-4 px-6 bg-blue-50 border-2 border-dashed border-blue-300 rounded-2xl text-blue-600 font-bold hover:bg-blue-100 hover:border-blue-400 transition flex flex-col items-center gap-2">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        <span>Pilih & Upload Gambar</span>
+                    </button>
+                </div>
+                
+                <div class="relative py-2 flex items-center justify-center">
+                    <span class="absolute bg-white px-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Atau</span>
+                    <hr class="w-full border-gray-100">
+                </div>
+
+                <!-- Option 2: URL -->
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">Opsi 2: Masukkan Link URL</label>
+                    <div class="flex gap-2">
+                        <input type="text" x-model="imageUrlInput" placeholder="https://contoh.com/gambar.jpg" class="flex-1 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                    </div>
+                </div>
+
+                <!-- Caption Field -->
+                <div class="pt-2">
+                    <label class="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Keterangan Gambar (Opsional)</label>
+                    <input type="text" x-model="imageCaptionInput" placeholder="Tulis keterangan gambar di sini..." class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                </div>
+            </div>
+            <div class="p-4 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
+                <button @click="showImageModal = false" class="px-6 py-2 text-gray-500 font-bold hover:text-gray-700 transition">Batal</button>
+                <button type="button" @click="insertImageFromUrl(imageUrlInput, imageCaptionInput)" class="bg-himatep-green text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-800 transition shadow-lg shadow-blue-200">Konfirmasi</button>
+            </div>
+        </div>
+    </div>
     
     <!-- Overlay for Mobile -->
     <div x-show="sidebarOpen" 
@@ -105,7 +312,7 @@ if (isset($_GET['edit']) && isset($_GET['id'])) {
          class="fixed inset-0 bg-black/50 z-30 lg:hidden" style="display:none;"></div>
          
     <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" 
-           class="fixed lg:static inset-y-0 left-0 w-64 bg-[#1B5E20] text-white flex flex-col shadow-xl z-40 transition-transform duration-300 lg:translate-x-0">
+           class="fixed lg:static inset-y-0 left-0 w-64 bg-[#2563EB] text-white flex flex-col shadow-xl z-40 transition-transform duration-300 lg:translate-x-0">
         <div class="p-6 border-b border-green-800 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <img src="../images/logo-himatep.png" alt="Logo" class="h-8 w-8 bg-white rounded-full p-1">
@@ -119,10 +326,11 @@ if (isset($_GET['edit']) && isset($_GET['id'])) {
             </button>
         </div>
         <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-            <a href="dashboard.php" class="block py-3 px-4 rounded-lg hover:bg-green-800 transition text-green-100">Dashboard</a>
-            <a href="manage_news.php" class="block py-3 px-4 rounded-lg bg-green-800 font-medium">Kelola Berita</a>
-            <a href="manage_proker.php" class="block py-3 px-4 rounded-lg hover:bg-green-800 transition text-green-100">Program Kerja</a>
-            <a href="view_aspirasi.php" class="block py-3 px-4 rounded-lg hover:bg-green-800 transition text-green-100">Suara Mahasiswa</a>
+            <a href="dashboard.php" class="block py-3 px-4 rounded-lg hover:bg-blue-800 transition text-green-100">Dashboard</a>
+            <a href="manage_news.php" class="block py-3 px-4 rounded-lg bg-blue-800 font-medium">Kelola Berita</a>
+            <a href="manage_proker.php" class="block py-3 px-4 rounded-lg hover:bg-blue-800 transition text-green-100">Program Kerja</a>
+            <a href="manage_pengurus.php" class="block py-3 px-4 rounded-lg hover:bg-blue-800 transition text-green-100">Struktur Pengurus</a>
+            <a href="view_aspirasi.php" class="block py-3 px-4 rounded-lg hover:bg-blue-800 transition text-green-100">Suara Mahasiswa</a>
         </nav>
         <div class="p-4 border-t border-green-800">
             <a href="logout.php" class="block w-full py-2 px-4 bg-red-500 hover:bg-red-600 rounded text-center font-bold transition shadow">Logout</a>
@@ -153,10 +361,10 @@ if (isset($_GET['edit']) && isset($_GET['id'])) {
         <div class="flex-1 p-8 overflow-y-auto grid grid-cols-1 xl:grid-cols-3 gap-8">
             <!-- Form -->
             <div class="xl:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-gray-400 h-fit">
-                <?php if($message): ?> <div class="bg-green-100 text-green-700 p-4 rounded-xl mb-4"><?= $message ?></div> <?php endif; ?>
+                <?php if($message): ?> <div class="bg-blue-100 text-green-700 p-4 rounded-xl mb-4"><?= $message ?></div> <?php endif; ?>
                 <?php if($error): ?> <div class="bg-red-100 text-red-700 p-4 rounded-xl mb-4"><?= $error ?></div> <?php endif; ?>
 
-                <form action="manage_news.php" method="POST" class="space-y-4">
+                <form action="manage_news.php" method="POST" enctype="multipart/form-data" class="space-y-4">
                     <input type="hidden" name="id" value="<?= $edit_data['id'] ?? '' ?>">
                     <div>
                         <label class="block text-sm font-bold mb-1">Judul Berita</label>
@@ -189,19 +397,36 @@ if (isset($_GET['edit']) && isset($_GET['id'])) {
                         </div>
                     </div>
                     <div>
-                        <label class="block text-sm font-bold mb-1">URL Gambar</label>
-                        <input type="text" name="gambar" value="<?= htmlspecialchars($edit_data['gambar'] ?? '') ?>" class="w-full p-2 border rounded-lg" placeholder="https://..." required>
+                        <label class="block text-sm font-bold mb-1">Gambar Berita</label>
+                        <div class="space-y-3">
+                            <input type="text" name="gambar" value="<?= htmlspecialchars($edit_data['gambar'] ?? '') ?>" class="w-full p-2 border rounded-lg" placeholder="Tempel URL gambar di sini">
+                            <div class="text-xs text-gray-500">Atau upload file gambar JPG, PNG, atau WEBP.</div>
+                            <input type="file" name="gambar_file" accept="image/*" class="w-full p-2 border rounded-lg bg-gray-50">
+                        </div>
                     </div>
                     <div>
                         <label class="block text-sm font-bold mb-1">Ringkasan (Pendek)</label>
                         <textarea name="ringkasan" class="w-full p-2 border rounded-lg" rows="2" required><?= htmlspecialchars($edit_data['ringkasan'] ?? '') ?></textarea>
                     </div>
                     <div>
-                        <label class="block text-sm font-bold mb-1">Isi Berita (HTML diperbolehkan)</label>
-                        <textarea name="isi" class="w-full p-2 border rounded-lg" rows="8" required><?= htmlspecialchars($edit_data['isi'] ?? '') ?></textarea>
+                        <label class="block text-sm font-bold mb-1">Isi Berita</label>
+                        <div class="mb-2 flex flex-wrap gap-2 text-xs font-bold">
+                            <button type="button" class="px-3 py-1.5 rounded-lg border border-gray-300 bg-gray-50 hover:bg-gray-100" onclick="wrapSelection('strong')">Bold</button>
+                            <button type="button" class="px-3 py-1.5 rounded-lg border border-gray-300 bg-gray-50 hover:bg-gray-100" onclick="wrapSelection('em')">Italic</button>
+                            <button type="button" class="px-3 py-1.5 rounded-lg border border-gray-300 bg-gray-50 hover:bg-gray-100" onclick="wrapSelection('u')">Underline</button>
+                            <button type="button" class="px-3 py-1.5 rounded-lg border border-gray-300 bg-gray-50 hover:bg-gray-100" onclick="wrapSelection('h2')">Judul 2</button>
+                            <button type="button" class="px-3 py-1.5 rounded-lg border border-gray-300 bg-gray-50 hover:bg-gray-100" onclick="wrapSelection('h3')">Judul 3</button>
+                            <button type="button" class="px-3 py-1.5 rounded-lg border border-gray-300 bg-gray-50 hover:bg-gray-100" onclick="insertList('ul')">Bullet List</button>
+                            <button type="button" class="px-3 py-1.5 rounded-lg border border-gray-300 bg-gray-50 hover:bg-gray-100" onclick="insertList('ol')">Nomer List</button>
+                            <button type="button" class="px-3 py-1.5 rounded-lg border border-gray-300 bg-gray-50 hover:bg-gray-100" onclick="insertLink()">Link</button>
+                            <button type="button" class="px-3 py-1.5 rounded-lg border border-gray-300 bg-gray-50 hover:bg-gray-100 text-blue-600" onclick="insertImage()">+ Gambar</button>
+                        </div>
+                        <textarea id="isi-editor" name="isi" class="w-full p-2 border rounded-lg font-mono text-sm leading-6" rows="10" required><?= htmlspecialchars($edit_data['isi'] ?? '') ?></textarea>
+                        <input type="file" id="content-image-upload" class="hidden" accept="image/*">
+                        <p class="text-xs text-gray-500 mt-2">Gunakan tombol di atas untuk menyisipkan tag HTML seperti <strong>&lt;strong&gt;</strong>, <strong>&lt;em&gt;</strong>, bullet list, dan list bernomor agar lebih mudah ditulis.</p>
                     </div>
                     <div class="flex gap-3">
-                        <button type="submit" class="flex-1 bg-himatep-green text-white font-bold py-3 rounded-xl hover:bg-green-800 transition">
+                        <button type="submit" class="flex-1 bg-himatep-green text-white font-bold py-3 rounded-xl hover:bg-blue-800 transition">
                             <?= $edit_data ? 'Simpan Perubahan' : 'Terbitkan Berita' ?>
                         </button>
                         <?php if(!$edit_data): ?>
@@ -222,7 +447,7 @@ if (isset($_GET['edit']) && isset($_GET['id'])) {
                         <span class="text-xs font-normal text-gray-500 italic">Pratinjau</span>
                     </div>
                     <div class="p-8 max-w-2xl mx-auto">
-                        <div id="preview-category" class="inline-block px-3 py-1 rounded-full text-xs font-bold text-white bg-green-600 mb-4 uppercase tracking-wider">KATEGORI</div>
+                        <div id="preview-category" class="inline-block px-3 py-1 rounded-full text-xs font-bold text-white bg-blue-600 mb-4 uppercase tracking-wider">KATEGORI</div>
                         <h1 id="preview-title" class="text-3xl font-bold text-gray-900 mb-4 leading-tight">Judul Berita Akan Muncul Di Sini</h1>
                         <div class="flex items-center gap-3 mb-6 text-sm text-gray-500 pb-6 border-b">
                             <span id="preview-author" class="font-semibold text-gray-800">Penulis</span>
@@ -230,7 +455,7 @@ if (isset($_GET['edit']) && isset($_GET['id'])) {
                             <span id="preview-date"><?= date('d M Y') ?></span>
                         </div>
                         <img id="preview-image" src="https://via.placeholder.com/800x400" class="w-full h-64 object-cover rounded-2xl mb-8 shadow-lg">
-                        <div id="preview-content" class="prose prose-green max-w-none text-gray-600 leading-relaxed">
+                        <div id="preview-content" class="prose prose-blue max-w-none text-gray-600 leading-relaxed">
                             Konten berita Anda akan tampil di sini secara real-time...
                         </div>
                     </div>
@@ -281,6 +506,221 @@ if (isset($_GET['edit']) && isset($_GET['id'])) {
             tanggal_posting: 'preview-date'
         };
 
+        function getTextSelectionRange(textarea) {
+            return [textarea.selectionStart, textarea.selectionEnd];
+        }
+
+        function replaceSelection(textarea, before, after = '') {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selected = textarea.value.substring(start, end) || 'Teks';
+            const replacement = before + selected + after;
+            textarea.setRangeText(replacement, start, end, 'end');
+            textarea.focus();
+            updatePreview();
+        }
+
+        function wrapSelection(tagName) {
+            const textarea = document.getElementById('isi-editor');
+            if (!textarea) return;
+
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selected = textarea.value.substring(start, end) || 'Teks';
+            const replacement = `<${tagName}>${selected}</${tagName}>`;
+            textarea.setRangeText(replacement, start, end, 'end');
+            textarea.focus();
+            updatePreview();
+        }
+
+        function insertList(listType) {
+            const textarea = document.getElementById('isi-editor');
+            if (!textarea) return;
+
+            const selected = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd).trim();
+            const items = selected ? selected.split('\n') : ['Item pertama', 'Item kedua'];
+            const listItems = items.map(item => `    <li>${item.trim() || 'Item'}</li>`).join('\n');
+            const replacement = `<${listType}>\n${listItems}\n</${listType}>`;
+            textarea.setRangeText(replacement, textarea.selectionStart, textarea.selectionEnd, 'end');
+            textarea.focus();
+            updatePreview();
+        }
+
+        function insertLink() {
+            const textarea = document.getElementById('isi-editor');
+            if (!textarea) return;
+
+            const url = window.prompt('Masukkan URL link');
+            if (!url) return;
+
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selected = textarea.value.substring(start, end) || 'Tautan';
+            const replacement = `<a href="${url}" target="_blank" rel="noopener noreferrer">${selected}</a>`;
+            textarea.setRangeText(replacement, start, end, 'end');
+            textarea.focus();
+            updatePreview();
+        }
+
+        function insertImage() {
+            // Trigger Alpine.js Modal (v3 syntax)
+            const body = document.querySelector('body');
+            if (window.Alpine) {
+                const alpineData = Alpine.$data(body);
+                alpineData.imageUrlInput = '';
+                alpineData.showImageModal = true;
+            } else {
+                // Fallback jika Alpine belum siap
+                console.error('Alpine.js not loaded');
+                return;
+            }
+            
+            // Set up upload handler
+            const fileInput = document.getElementById('content-image-upload');
+            const textarea = document.getElementById('isi-editor');
+            
+            fileInput.onchange = async () => {
+                if (!fileInput.files || !fileInput.files[0]) return;
+                
+                const alpineData = Alpine.$data(body);
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+                formData.append('type', 'berita');
+
+                try {
+                    alpineData.showImageModal = false; // Close modal
+                    const response = await fetch('ajax_upload.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        const caption = alpineData.imageCaptionInput;
+                        let replacement = `\n<figure class="my-6">\n    <img src="${result.path}" alt="${caption || 'Gambar Berita'}" class="w-full rounded-2xl shadow-md">\n`;
+                        if (caption) {
+                            replacement += `    <figcaption class="text-center text-sm text-gray-500 mt-2 italic">${caption}</figcaption>\n`;
+                        }
+                        replacement += `</figure>\n`;
+                        
+                        textarea.setRangeText(replacement, textarea.selectionStart, textarea.selectionEnd, 'end');
+                        textarea.focus();
+                        updatePreview();
+                    } else {
+                        alert('Gagal upload: ' + (result.error || 'Terjadi kesalahan'));
+                    }
+                } catch (err) {
+                    alert('Terjadi kesalahan saat upload.');
+                }
+                fileInput.value = ''; 
+            };
+        }
+
+        function insertImageFromUrl(url, caption) {
+            const textarea = document.getElementById('isi-editor');
+            const alpineData = Alpine.$data(document.querySelector('body'));
+            
+            if (!url) {
+                alert('Masukkan URL gambar terlebih dahulu.');
+                return;
+            }
+
+            let replacement = `\n<figure class="my-6">\n    <img src="${url}" alt="${caption || 'Gambar Berita'}" class="w-full rounded-2xl shadow-md">\n`;
+            if (caption) {
+                replacement += `    <figcaption class="text-center text-sm text-gray-500 mt-2 italic">${caption}</figcaption>\n`;
+            }
+            replacement += `</figure>\n`;
+
+            textarea.setRangeText(replacement, textarea.selectionStart, textarea.selectionEnd, 'end');
+            textarea.focus();
+            
+            alpineData.showImageModal = false;
+            updatePreview();
+        }
+
+        function normalizePreviewContent(content) {
+            const rawContent = (content || '').trim();
+
+            if (!rawContent) {
+                return '';
+            }
+
+            const expanded = rawContent.replace(/<(\/?)(ul|ol|li|p|h2|h3|blockquote|div|section|article|table|thead|tbody|tr|td|th)\b([^>]*)>/gi, '\n<$1$2$3>\n'.replace(/\\n/g, '\n'));
+            const lines = expanded.split(/\r?\n/);
+            const blocks = [];
+            let paragraphLines = [];
+            let listItems = [];
+            let listType = null;
+
+            const flushParagraph = () => {
+                if (!paragraphLines.length) return;
+                blocks.push(`<p>${paragraphLines.map(line => line.trim()).join('<br>')}</p>`);
+                paragraphLines = [];
+            };
+
+            const flushList = () => {
+                if (!listType || !listItems.length) return;
+                const tag = listType === 'ol' ? 'ol' : 'ul';
+                blocks.push(`<${tag}>${listItems.map(item => `<li>${item}</li>`).join('')}</${tag}>`);
+                listType = null;
+                listItems = [];
+            };
+
+            lines.forEach(line => {
+                const trimmed = line.trim();
+                if (!trimmed) {
+                    flushParagraph();
+                    flushList();
+                    return;
+                }
+
+                if (/^<\/?(?:ul|ol|li|p|h2|h3|blockquote|div|section|article|table|thead|tbody|tr|td|th)\b[^>]*>$/i.test(trimmed)) {
+                    flushParagraph();
+                    flushList();
+                    blocks.push(trimmed);
+                    return;
+                }
+
+                if (/^(-|\*|•)\s+/.test(trimmed)) {
+                    flushParagraph();
+                    if (listType !== 'ul') {
+                        flushList();
+                        listType = 'ul';
+                    }
+                    listItems.push(trimmed.replace(/^(-|\*|•)\s+/, ''));
+                    return;
+                }
+
+                if (/^\d+\.\s+/.test(trimmed)) {
+                    flushParagraph();
+                    if (listType !== 'ol') {
+                        flushList();
+                        listType = 'ol';
+                    }
+                    listItems.push(trimmed.replace(/^\d+\.\s+/, ''));
+                    return;
+                }
+
+                flushList();
+                paragraphLines.push(trimmed);
+            });
+
+            flushParagraph();
+            flushList();
+            return blocks.join('\n');
+        }
+
+        function renderPreviewContent(rawContent) {
+            let content = normalizePreviewContent(rawContent);
+
+            if (!content) {
+                return 'Konten berita Anda akan tampil di sini secara real-time...';
+            }
+
+            // Adjust relative image paths for admin preview
+            return content.replace(/src="images\//g, 'src="../images/');
+        }
+
         function updatePreview() {
             fields.forEach(field => {
                 const input = document.querySelector(`[name="${field}"]`);
@@ -288,9 +728,11 @@ if (isset($_GET['edit']) && isset($_GET['id'])) {
                 
                 if (input && preview) {
                     if (field === 'gambar') {
-                        preview.src = input.value || 'https://via.placeholder.com/800x400';
+                        let path = input.value;
+                        if (path && path.startsWith('images/')) path = '../' + path;
+                        preview.src = path || 'https://via.placeholder.com/800x400';
                     } else if (field === 'isi') {
-                        preview.innerHTML = input.value || 'Konten berita Anda akan tampil di sini...';
+                        preview.innerHTML = renderPreviewContent(input.value);
                     } else if (field === 'kategori') {
                         preview.innerText = input.value.toUpperCase() || 'KATEGORI';
                         const colorInput = document.querySelector('[name="kategori_color"]');
@@ -313,6 +755,36 @@ if (isset($_GET['edit']) && isset($_GET['id'])) {
             el.addEventListener('input', updatePreview);
             el.addEventListener('change', updatePreview);
         });
+
+        const imageFileInput = document.querySelector('input[name="gambar_file"]');
+        const imageUrlInput = document.querySelector('input[name="gambar"]');
+        const imagePreview = document.getElementById('preview-image');
+
+        if (imageFileInput && imagePreview) {
+            imageFileInput.addEventListener('change', () => {
+                const file = imageFileInput.files && imageFileInput.files[0];
+                if (!file) {
+                    updatePreview();
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = event => {
+                    imagePreview.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        if (imageUrlInput && imagePreview) {
+            imageUrlInput.addEventListener('input', () => {
+                if (!imageFileInput || !(imageFileInput.files && imageFileInput.files[0])) {
+                    let path = imageUrlInput.value;
+                    if (path && path.startsWith('images/')) path = '../' + path;
+                    imagePreview.src = path || 'https://via.placeholder.com/800x400';
+                }
+            });
+        }
 
         // Init
         updatePreview();

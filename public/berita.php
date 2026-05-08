@@ -46,8 +46,8 @@ $berita_json = json_encode(array_map(function($b) {
             theme: {
                 extend: {
                     colors: {
-                        'himatep-green': '#1B5E20',
-                        'himatep-light': '#6efa80',
+                        'himatep-green': '#2563EB',
+                        'himatep-light': '#DBEAFE',
                         'himatep-dark': '#111111',
                     },
                     fontFamily: {
@@ -108,7 +108,7 @@ $berita_json = json_encode(array_map(function($b) {
                         Mahasiswa</a>
                 </div>
                 <div class="hidden md:flex items-center gap-4">
-                    <a href="admin/login.php" class="text-gray-400 hover:text-himatep-green transition-all p-2 rounded-full hover:bg-green-50" title="Admin Panel">
+                    <a href="admin/login.php" class="text-gray-400 hover:text-himatep-green transition-all p-2 rounded-full hover:bg-blue-50" title="Admin Panel">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                         </svg>
@@ -116,7 +116,7 @@ $berita_json = json_encode(array_map(function($b) {
                     <div class="relative" x-data="{ dropdownOpen: false }" @mouseenter="dropdownOpen = true"
                         @mouseleave="dropdownOpen = false">
                     <a href="index.php#kontak"
-                        class="bg-green-400 hover:bg-green-500 text-himatep-dark px-6 py-2 rounded-full font-medium transition shadow-md flex items-center gap-2 focus:outline-none">
+                        class="bg-blue-400 hover:bg-blue-500 text-himatep-dark px-6 py-2 rounded-full font-medium transition shadow-md flex items-center gap-2 focus:outline-none">
                         Narahubung
                     </a>
                     </div>
@@ -170,7 +170,7 @@ $berita_json = json_encode(array_map(function($b) {
             class="absolute inset-0 w-full h-full object-cover z-0 opacity-40 mix-blend-luminosity">
 
         <!-- Soft Overlay -->
-        <div class="absolute inset-0 bg-gradient-to-t from-himatep-light/40 to-transparent z-0"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-himatep-green/40 to-transparent z-0"></div>
         <div class="max-w-7xl mx-auto px-4 relative z-10 text-center">
             <div class="max-w-7xl mx-auto px-4 relative z-10 text-center">
                 <h1 class="text-5xl md:text-7xl font-bold text-white mb-6 drop-shadow-lg">Portal Berita</h1>
@@ -201,7 +201,7 @@ $berita_json = json_encode(array_map(function($b) {
                         </div>
                         <div class="md:w-1/2 p-8 md:p-12 flex flex-col justify-center relative">
                             <div
-                                class="absolute top-8 right-8 text-sm font-semibold text-himatep-green bg-green-50 px-3 py-1 rounded-full border border-green-200">
+                                class="absolute top-8 right-8 text-sm font-semibold text-himatep-green bg-blue-50 px-3 py-1 rounded-full border border-green-200">
                                 BERITA UTAMA
                             </div>
                             <div class="flex items-center text-sm text-gray-500 mb-4 mt-8 md:mt-0">
@@ -264,7 +264,7 @@ $berita_json = json_encode(array_map(function($b) {
     <footer class="bg-himatep-dark text-white py-16 relative overflow-hidden">
         <!-- Decoration -->
         <div
-            class="absolute top-0 right-0 w-64 h-64 bg-green-900 rounded-full blur-3xl opacity-20 transform translate-x-1/2 -translate-y-1/2">
+            class="absolute top-0 right-0 w-64 h-64 bg-blue-900 rounded-full blur-3xl opacity-20 transform translate-x-1/2 -translate-y-1/2">
         </div>
 
         <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-12 relative z-10">

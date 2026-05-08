@@ -43,12 +43,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // 4. Navbar Sticky transisi background (Tanpa gerakan naik)
     window.addEventListener('scroll', () => {
         const navInner = document.querySelector('#navbar > div > div');
+        if (!navInner) return;
+        
         if (window.scrollY > 50) {
-            navInner.classList.add('', '');
-            navInner.classList.remove('', '', '');
+            navInner.classList.add('shadow-lg', 'bg-white/90');
         } else {
-            navInner.classList.remove('', '');
-            navInner.classList.add('', '', '');
+            navInner.classList.remove('shadow-lg', 'bg-white/90');
         }
     });
 });
