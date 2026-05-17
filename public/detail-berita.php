@@ -89,7 +89,7 @@ $page_img = $berita ? $berita['gambar'] : "http://localhost/webHimatep/public/im
         rel="stylesheet">
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=1.4">
 
     <style>
         .news-content a {

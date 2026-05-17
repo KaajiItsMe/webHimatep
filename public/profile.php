@@ -140,7 +140,7 @@ try {
     <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=1.4">
 
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -296,7 +296,7 @@ try {
         <div class="max-w-7xl mx-auto px-4">
             <!-- BPH INTI -->
             <div class="text-center mb-16">
-                <h2 class="text-4xl font-black text-gray-900 mb-4 uppercase tracking-tighter">BPH Inti <span class="text-amber-500">HIMATEP</span></h2>
+                <h2 class="text-4xl font-black text-himatep-green mb-4 uppercase tracking-tighter">BPH Inti <span class="text-amber-500">HIMATEP</span></h2>
                 <div class="flex items-center justify-center gap-4">
                     <span class="h-px w-12 bg-gray-300"></span>
                     <p class="text-gray-500 font-bold uppercase tracking-widest text-xs">KSB</p>
@@ -330,7 +330,7 @@ try {
             <?php if (!empty($ketua_divisi_list)): ?>
             <!-- BIDANG Section -->
             <div class="text-center mt-24 mb-16">
-                <h2 class="text-4xl font-black text-gray-900 mb-4 uppercase tracking-tighter">Divisi <span class="text-amber-500">Himatep</span></h2>
+                <h2 class="text-4xl font-black text-himatep-green mb-4 uppercase tracking-tighter">Divisi <span class="text-amber-500">Himatep</span></h2>
                 <div class="flex items-center justify-center gap-4">
                     <span class="h-px w-12 bg-gray-300"></span>
                     <p class="text-gray-500 font-bold uppercase tracking-widest text-xs">Ketua Divisi</p>
@@ -364,7 +364,7 @@ try {
             <?php if (!empty($anggota_list)): ?>
             <!-- ANGGOTA Section -->
             <div class="text-center mt-24 mb-16">
-                <h2 class="text-4xl font-black text-gray-900 mb-4 uppercase tracking-tighter">Anggota <span class="text-amber-500">Himatep</span></h2>
+                <h2 class="text-4xl font-black text-himatep-green mb-4 uppercase tracking-tighter">Anggota <span class="text-amber-500">Himatep</span></h2>
                 <div class="flex items-center justify-center gap-4">
                     <span class="h-px w-12 bg-gray-300"></span>
                     <p class="text-gray-500 font-bold uppercase tracking-widest text-xs">Seluruh Anggota</p>

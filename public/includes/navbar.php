@@ -33,7 +33,7 @@ if (!function_exists('is_nav_active')) {
             <div class="flex items-center gap-3">
                 <img src="<?= $base_path ?>images/logo-himatep.png" alt="Logo" class="h-10 w-10 rounded-full bg-gray-100"
                     onerror="this.src='https://via.placeholder.com/50x50.png?text=Logo'">
-                <span class="font-bold text-xs md:text-sm leading-tight text-himatep-dark">HIMATEP<br>FIP<br>UNM</span>
+                <span class="font-bold text-xs md:text-sm leading-tight text-himatep-green">HIMATEP<br>FIP<br>UNM</span>
             </div>
             <div class="hidden md:flex space-x-4 lg:space-x-8 text-sm lg:text-base">
                 <a href="<?= $prefix ?>#hero" class="nav-link whitespace-nowrap <?= $is_home ? 'text-himatep-green font-bold' : 'text-gray-600' ?> font-medium hover:text-himatep-green transition">Beranda</a>
@@ -92,7 +92,7 @@ if (!function_exists('is_nav_active')) {
                                     $link = "https://wa.me/" . preg_replace('/[^0-9]/', '', $link);
                                 }
                         ?>
-                            <a href="<?= $link ?>" target="_blank" class="block px-4 py-2 text-sm text-gray-700 hover:bg-himatep-light hover:text-himatep-green transition flex items-center gap-2">
+                            <a href="<?= $link ?>" target="_blank" class="block px-4 py-2 text-sm text-himatep-green hover:bg-himatep-light transition flex items-center gap-2">
                                 <?= function_exists('get_contact_svg') ? get_contact_svg($nc['icon'], 'w-4 h-4') : '' ?> <?= htmlspecialchars($nc['label']) ?>
                             </a>
                         <?php endforeach; 
@@ -104,7 +104,7 @@ if (!function_exists('is_nav_active')) {
             </div>
             <!-- Mobile menu button -->
             <div class="md:hidden flex items-center">
-                <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-gray-600 focus:outline-none">
+                <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-himatep-green focus:outline-none">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path x-show="!mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         <path x-show="mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" style="display:none;" />

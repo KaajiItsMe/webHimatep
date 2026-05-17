@@ -129,5 +129,13 @@ body::-webkit-scrollbar {
     }
 }
 
+/* Global overrides: Change all black/dark-gray text to the signature himatep-green (blue #1B2945) */
+.text-himatep-dark,
+.text-gray-900,
+.text-gray-800,
+.text-black {
+    color: #1B2945 !important;
+}
+
 
 
